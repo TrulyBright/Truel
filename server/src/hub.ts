@@ -29,6 +29,8 @@ export class Hub implements Broadcasting, ActionHandling {
                 const createRoom = action as CreateRoom
                 const room = new Room(this.roomIdCounter++, createRoom.title, createRoom.maxMembers, createRoom.password)
                 this.rooms.set(room.id, room)
+                this.handleAction(user, new JoinRoom(room.id, room.password))
+                room.setHost(user)
                 this.broadcast(new RoomCreated(room.id, room.title, room.maxMembers, room.password))
                 break
             case JoinRoom:
@@ -36,6 +38,7 @@ export class Hub implements Broadcasting, ActionHandling {
                 const roomToJoin = this.rooms.get(joinRoom.roomId)
                 if (roomToJoin) {
                     roomToJoin.addMember(user)
+                    user.room = roomToJoin
                 } else {
                     user.recv(new GameError(1000))
                 }

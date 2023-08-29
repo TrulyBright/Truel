@@ -11,7 +11,7 @@ export class Room implements Broadcasting, ActionHandling {
         public title: string,
         public maxMembers: number,
         public password: string,
-    ) {}
+    ) { }
 
     get private() {
         return this.password !== '';
@@ -29,6 +29,9 @@ export class Room implements Broadcasting, ActionHandling {
     removeMember(user: User) {
         this.members = this.members.filter(u => u !== user)
         this.broadcast(new UserLeftRoom(user.name))
+        if (user === this.host && this.members.length > 0) {
+            this.setHost(this.members[0])
+        }
     }
 
     setHost(user: User) {
@@ -69,7 +72,7 @@ export class Room implements Broadcasting, ActionHandling {
                 break
             default:
                 throw new Error('Unknown action')
-                // this.game!.handleAction(user, action)
+            // this.game!.handleAction(user, action)
         }
     }
 }
