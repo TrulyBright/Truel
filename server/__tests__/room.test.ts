@@ -17,6 +17,7 @@ test("Scenario #1", () => {
     const user2 = new User("user2")
     hub.handleAction(user1, new CreateRoom("room1", 2, null))
     const room = user1.room
+    expect(hub.rooms.has(room!.id)).toBe(true)
     expect(room).not.toBeNull()
     expect(room).toBeInstanceOf(Room)
     expect(room!.title).toBe("room1")
@@ -34,5 +35,5 @@ test("Scenario #1", () => {
     hub.handleAction(user2, new LeaveRoom())
     expect(room!.members).not.toContain(user1)
     expect(room!.members).not.toContain(user2)
-    expect(hub.rooms).not.toContain(room)
+    expect(hub.rooms.has(room!.id)).toBe(false)
 })

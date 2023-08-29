@@ -1,14 +1,21 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "module": "ESNext",
+        "module": "NodeNext",
         "outDir": "./dist",
-        "rootDirs": ["./src"],
+        "rootDirs": [
+            "./src"
+        ],
         "paths": {
-            "@/*": ["./src/*"],
-            "@shared/*": ["../shared/*"]
+            "@/*": [
+                "./src/*"
+            ],
+            "@shared/*": [
+                "../shared/*"
+            ]
         },
         "sourceMap": true,
-        "moduleResolution": "NodeNext"
+        "moduleResolution": "NodeNext",
+        "esModuleInterop": true
     },
 }

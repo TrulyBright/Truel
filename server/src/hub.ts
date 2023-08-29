@@ -47,6 +47,9 @@ export class Hub implements Broadcasting, ActionHandling {
                 const roomToLeave = user.room
                 if (roomToLeave) {
                     roomToLeave.removeMember(user)
+                    if (roomToLeave.empty) {
+                        this.rooms.delete(roomToLeave.id)
+                    }
                 } else {
                     user.recv(new GameError(1001))
                 }

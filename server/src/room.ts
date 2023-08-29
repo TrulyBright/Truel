@@ -17,6 +17,14 @@ export class Room implements Broadcasting, ActionHandling {
         return this.password !== '';
     }
 
+    get empty() {
+        return this.members.length === 0
+    }
+
+    get full() {
+        return this.members.length === this.maxMembers
+    }
+
     broadcast(event: GameEvent): void {
         this.members.forEach(user => user.recv(event))
     }
