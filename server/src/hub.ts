@@ -54,11 +54,13 @@ export class Hub implements Broadcasting, ActionHandling {
 
     handleJoinRoom(user: User, action: JoinRoom) {
         const room = this.rooms.get(action.roomId)
-        if (room) {
+        if (!room) {
+            user.recv(new GameError(1000))
+        } else if (room.password !== action.password) {
+            user.recv(new GameError(1003))
+        } else {
             room.addMember(user)
             user.joinRoom(room)
-        } else {
-            user.recv(new GameError(1000))
         }
     }
 
