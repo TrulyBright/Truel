@@ -1,5 +1,5 @@
 import { Action, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action";
-import { GameError, GameEvent, RoomCreated, UserCreated, UserDeleted } from "@shared/event";
+import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreated, UserDeleted } from "@shared/event";
 import { ActionHandling, Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
 import { User } from "@/user";
@@ -23,39 +23,60 @@ export class Hub implements Broadcasting, ActionHandling {
         this.broadcast(new UserDeleted(user.name))
     }
 
+    // HACK: hub can handle actions of a user who is not in the hub.
     handleAction(user: User, action: Action) {
         switch (action.constructor) {
             case CreateRoom:
-                const createRoom = action as CreateRoom
-                const room = new Room(this.roomIdCounter++, createRoom.title, createRoom.maxMembers, createRoom.password)
-                this.rooms.set(room.id, room)
-                this.handleAction(user, new JoinRoom(room.id, room.password))
-                room.setHost(user)
-                this.broadcast(new RoomCreated(room.id, room.title, room.maxMembers, room.password))
+                this.handleCreateRoom(user, action as CreateRoom)
                 break
             case JoinRoom:
-                const joinRoom = action as JoinRoom
-                const roomToJoin = this.rooms.get(joinRoom.roomId)
-                if (roomToJoin) {
-                    roomToJoin.addMember(user)
-                    user.room = roomToJoin
-                } else {
-                    user.recv(new GameError(1000))
-                }
+                this.handleJoinRoom(user, action as JoinRoom)
                 break
             case LeaveRoom:
-                const roomToLeave = user.room
-                if (roomToLeave) {
-                    roomToLeave.removeMember(user)
-                    if (roomToLeave.empty) {
-                        this.rooms.delete(roomToLeave.id)
-                    }
-                } else {
-                    user.recv(new GameError(1001))
-                }
+                this.handleLeaveRoom(user, action as LeaveRoom)
                 break
             default:
                 user.room!.handleAction(user, action)
         }
+    }
+
+    handleCreateRoom(user: User, action: CreateRoom) {
+        if (user.room) {
+            user.recv(new GameError(1002))
+            return
+        }
+        const room = new Room(this.roomIdCounter++, action.title, action.maxMembers, action.password)
+        this.rooms.set(room.id, room)
+        this.handleAction(user, new JoinRoom(room.id, room.password))
+        room.setHost(user)
+        this.broadcast(new RoomCreated(room.id, room.title, room.maxMembers))
+    }
+
+    handleJoinRoom(user: User, action: JoinRoom) {
+        const room = this.rooms.get(action.roomId)
+        if (room) {
+            room.addMember(user)
+            user.joinRoom(room)
+        } else {
+            user.recv(new GameError(1000))
+        }
+    }
+
+    handleLeaveRoom(user: User, action: LeaveRoom) {
+        const left = user.room
+        if (left) {
+            user.leaveRoom()
+            left.removeMember(user)
+            if (left.empty) {
+                this.deleteRoom(left)
+            }
+        } else {
+            user.recv(new GameError(1001))
+        }
+    }
+
+    deleteRoom(room: Room) {
+        this.rooms.delete(room.id)
+        this.broadcast(new RoomDeleted(room.id))
     }
 }
