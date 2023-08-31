@@ -32,6 +32,6 @@ export class Queue<T> {
             const popped = this.dequeue()
             if (popped.constructor === targetType) return popped
         }
-        throw new Error(`${targetType.name} was never queued.`)
+        throw new Error(`${targetType.name} is not in the queue.`)
     }
 }
