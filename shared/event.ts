@@ -42,6 +42,7 @@ export class RoomCreated {
         public readonly id: number,
         public readonly title: string,
         public readonly maxMembers: number,
+        public readonly isPrivate: boolean
     ) { }
 }
 
@@ -58,7 +59,7 @@ export class RoomUpdated {
         public readonly id: number,
         public readonly title: string,
         public readonly maxMembers: number,
-        public readonly password: string,
+        public readonly isPrivate: boolean,
     ) { }
 }
 

@@ -2,7 +2,7 @@ import { Hub } from "@/hub"
 import { User } from "@/user"
 import { Room } from "@/room"
 import { Chat, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action"
-import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, RoomUpdated, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 
 // Scenario #1: Create, Join, Leave
 // 1. A user joins.
@@ -12,8 +12,9 @@ import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, UserChat, User
 // 5. Users in the room chat, which the outsiders cannot see.
 // 6. The first user (host) leaves the room.
 // 7. The second user becomes the host.
-// 8. The second user leaves the room.
-// 9. The room is destroyed.
+// 8. RoomUpdated is sent to everyone in the server.
+// 9. The second user leaves the room.
+// 10. The room is destroyed.
 test("Scenario #1", () => {
     const hub = new Hub()
     const user1 = new User("user1")
@@ -86,13 +87,21 @@ test("Scenario #1", () => {
     expect(room.members).toContain(user2)
     const user2NewHost = user2.last50Events.findItemOf(NewHost) as NewHost
     expect(user2NewHost.name).toBe(user2.name)
-    // 8. The second user leaves the room.
+    // 8. RoomUpdated is sent to everyone in the server.
+    hub.users.forEach(user => {
+        const roomUpdated = user.last50Events.findItemOf(RoomUpdated) as RoomUpdated
+        expect(roomUpdated.id).toBe(room.id)
+        expect(roomUpdated.title).toBe(room.title)
+        expect(roomUpdated.maxMembers).toBe(room.maxMembers)
+        expect(roomUpdated.isPrivate).toBe(room.private)
+    })
+    // 9. The second user leaves the room.
     hub.handleAction(user2, new LeaveRoom())
     expect(user2.room).toBeNull()
     expect(room.members).not.toContain(user1)
     expect(room.members).not.toContain(user2)
     expect(room.empty).toBe(true)
-    // 9. The room is destroyed.
+    // 10. The room is destroyed.
     expect(hub.rooms.has(room.id)).toBe(false)
     hub.users.forEach(user => {
         const roomDeleted = user.last50Events.findItemOf(RoomDeleted) as RoomDeleted
