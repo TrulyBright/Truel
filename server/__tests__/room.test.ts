@@ -1,18 +1,19 @@
 import { Hub } from "@/hub"
 import { User } from "@/user"
 import { Room } from "@/room"
-import { CreateRoom, JoinRoom, LeaveRoom } from "@shared/action"
-import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { Chat, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action"
+import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 
 // Scenario #1: Create, Join, Leave
 // 1. A user joins.
 // 2. The user creates a room.
 // 3. Another user joins the room.
 // 4. The third user fails to join the room.
-// 5. The first user (host) leaves the room.
-// 6. The second user becomes the host.
-// 7. The second user leaves the room.
-// 8. The room is destroyed.
+// 5. Users in the room chat, which the outsiders cannot see.
+// 6. The first user (host) leaves the room.
+// 7. The second user becomes the host.
+// 8. The second user leaves the room.
+// 9. The room is destroyed.
 test("Scenario #1", () => {
     const hub = new Hub()
     const user1 = new User("user1")
@@ -62,24 +63,36 @@ test("Scenario #1", () => {
     expect(room.members).not.toContain(user3WhoFailsToJoin)
     const errorToUser3 = user3WhoFailsToJoin.last50Events.findItemOf(GameError) as GameError
     expect(errorToUser3.code).toBe(1003)
-    // 5. The first user (host) leaves the room.
+    // 5. Users in the room chat, which the outsiders cannot see.
+    const message = "hello"
+    hub.handleAction(user1, new Chat(message))
+    hub.users.filter(user => user.room !== room).forEach(user => {
+        const chatReceived = () => user.last50Events.findItemOf(UserChat) as UserChat
+        expect(chatReceived).toThrow()
+    })
+    room.members.forEach(user => {
+        const user1Chat = user.last50Events.findItemOf(UserChat) as UserChat
+        expect(user1Chat.name).toBe(user1.name)
+        expect(user1Chat.message).toBe(message)
+    })
+    // 6. The first user (host) leaves the room.
     hub.handleAction(user1, new LeaveRoom())
     expect(user1.room).toBeNull()
     expect(room.members).not.toContain(user1)
     const user1LeftRoom = user2.last50Events.findItemOf(UserLeftRoom) as UserLeftRoom
     expect(user1LeftRoom.name).toBe(user1.name)
-    // 6. The second user becomes the host.
+    // 7. The second user becomes the host.
     expect(room.host).toBe(user2)
     expect(room.members).toContain(user2)
     const user2NewHost = user2.last50Events.findItemOf(NewHost) as NewHost
     expect(user2NewHost.name).toBe(user2.name)
-    // 7. The second user leaves the room.
+    // 8. The second user leaves the room.
     hub.handleAction(user2, new LeaveRoom())
     expect(user2.room).toBeNull()
     expect(room.members).not.toContain(user1)
     expect(room.members).not.toContain(user2)
     expect(room.empty).toBe(true)
-    // 8. The room is destroyed.
+    // 9. The room is destroyed.
     expect(hub.rooms.has(room.id)).toBe(false)
     hub.users.forEach(user => {
         const roomDeleted = user.last50Events.findItemOf(RoomDeleted) as RoomDeleted
