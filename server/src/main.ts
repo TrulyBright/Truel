@@ -8,7 +8,12 @@ const hub = new Hub()
 wss.on("connection", (ws) => {
     const user = new User("test")
     user.onEvent(event => {
-        ws.send(JSON.stringify(event))
+        const data = JSON.stringify({
+            type: event.constructor.name,
+            args: event
+        })
+        console.log(`${user.name} receives ${data}`)
+        ws.send(data)
     })
     hub.addUser(user)
     ws.on("message", (message) => {
