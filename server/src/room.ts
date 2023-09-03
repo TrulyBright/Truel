@@ -1,11 +1,13 @@
-import { Action, Chat, Mute, StartGame, Unmute } from "@shared/action"
+import { Action, Chat, StartGame } from "@shared/action"
 import { GameError, GameEvent, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 import { ActionHandling, Broadcasting } from "@/interfaces"
 import { User } from "@/user"
+import { Game } from "@/game"
 
 export class Room implements Broadcasting, ActionHandling {
     host: User | null = null
     members: User[] = []
+    game: Game
     constructor(
         public readonly id: number,
         public title: string,
@@ -55,32 +57,14 @@ export class Room implements Broadcasting, ActionHandling {
                 break
             case StartGame:
                 if (user === this.host) {
-                    /// TODO: Start game
+                    this.game = new Game(this.members)
+                    this.game.task = this.game.start()
                 } else {
                     user.recv(new GameError(1002))
                 }
                 break
-            case Mute:
-                const mute = action as Mute
-                const userToMute = this.members.find(u => u.name === mute.name)
-                if (userToMute) {
-                    user.addMuted(userToMute)
-                } else {
-                    user.recv(new GameError(1003))
-                }
-                break
-            case Unmute:
-                const unmute = action as Unmute
-                const userToUnmute = this.members.find(u => u.name === unmute.name)
-                if (userToUnmute) {
-                    user.removeMuted(userToUnmute)
-                } else {
-                    user.recv(new GameError(1003))
-                }
-                break
             default:
-                throw new Error('Unknown action')
-            // this.game!.handleAction(user, action)
+                this.game!.handleAction(user, action)
         }
     }
 }

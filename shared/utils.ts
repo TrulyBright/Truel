@@ -35,3 +35,10 @@ export class Queue<T> {
         throw new Error(`${targetType.name} is not in the queue.`)
     }
 }
+
+export const withTimeout = <T>(millis: number, promise: Promise<T>) => {
+    const timeout = new Promise((resolve, reject) => {
+        setTimeout(() => reject(`Timed out in ${millis} ms.`), millis)
+    })
+    return Promise.race([promise, timeout])
+}
