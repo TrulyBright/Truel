@@ -14,7 +14,7 @@
                 "../shared/*"
             ]
         },
-        "sourceMap": true,
+        "inlineSourceMap": true,
         "moduleResolution": "NodeNext",
         "esModuleInterop": true
     },
