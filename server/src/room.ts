@@ -7,7 +7,7 @@ import { Game } from "@/game"
 export class Room implements Broadcasting, ActionHandling {
     host: User | null = null
     members: User[] = []
-    game: Game
+    game: Game | null = null
     constructor(
         public readonly id: number,
         public title: string,
@@ -50,6 +50,7 @@ export class Room implements Broadcasting, ActionHandling {
     }
 
     handleAction(user: User, action: Action): void {
+        console.log(`Room ${this.id} handles ${action.constructor.name} from ${user.name} with args ${JSON.stringify(action)}`)
         switch (action.constructor) {
             case Chat:
                 const chat = action as Chat

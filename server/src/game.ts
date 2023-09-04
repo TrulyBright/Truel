@@ -8,6 +8,7 @@ import { Card } from "@shared/enums"
 export class Game implements ActionHandling, Broadcasting {
     currentPlayer: User
     task: Promise<void> | null = null
+    turnPromise: Promise<Action>
     constructor(
         public players: User[],
     ) { }
@@ -26,32 +27,43 @@ export class Game implements ActionHandling, Broadcasting {
         this.players.forEach(p => p.resetForNewRound())
         this.currentPlayer = this.players[0]
         while (this.survivors.length > 1) {
-            const timeLimit = 10000
+            const timeLimit = 1
             this.broadcast(new NowTurnOf(this.currentPlayer.name))
+            console.log(`Now turn of ${this.currentPlayer.name}`)
             const turnStartedAt = Date.now()
-            let actionPerformed = await withTimeout(timeLimit, this.currentPlayer.waitForAction([Shoot, DrawCard, PlayCard]))
+            this.turnPromise = withTimeout(timeLimit, this.currentPlayer.waitForAction([Shoot, DrawCard, PlayCard]))
+            let actionPerformed = undefined
+            try {
+                actionPerformed = await this.turnPromise
+            } catch (e) {
+                actionPerformed = null
+            }
             if (actionPerformed instanceof PlayCard) {
                 this.handlePlayCard(this.currentPlayer, actionPerformed)
                 if (this.currentPlayer.has_run) continue
                 else {
                     const timeLeft = timeLimit - (Date.now() - turnStartedAt)
-                    actionPerformed = await withTimeout(timeLeft, this.currentPlayer.waitForAction([Shoot, DrawCard]))
+                    this.turnPromise = withTimeout(timeLeft, this.currentPlayer.waitForAction([Shoot, DrawCard]))
+                    actionPerformed = await this.turnPromise
                 }
             }
-            if (actionPerformed instanceof Shoot) {
+            if (actionPerformed instanceof Shoot && actionPerformed.target !== this.currentPlayer.name) {
                 this.handleShoot(this.currentPlayer, actionPerformed)
             } else if (actionPerformed instanceof DrawCard) {
                 this.handleDrawCard(this.currentPlayer, actionPerformed)
-            } else { // It's a timeout. Shoot at a random player
-                const target = this.survivors[Math.floor(Math.random() * this.survivors.length)]
+            } else { // It's a timeout or an illegal Shoot Action. Shoot at a random player
+                const theOthers = this.survivors.filter(u => u !== this.currentPlayer)
+                const target = theOthers[Math.floor(Math.random() * theOthers.length)]
                 this.handleShoot(this.currentPlayer, new Shoot(target.name))
             }
             const nextPlayerIndex = this.survivors.indexOf(this.currentPlayer) + 1
             this.currentPlayer = this.survivors[nextPlayerIndex % this.survivors.length]
+            console.log("Survivors: " + this.survivors.map(p => p.name).join(", "))
         }
     }
 
     handleShoot(user: User, action: Shoot) {
+        console.log(`${user.name} shoots at ${action.target}`)
         const target = this.players.find(p => p.name === action.target)
         if (!target) {
             user.recv(new GameError(1004))
@@ -71,6 +83,7 @@ export class Game implements ActionHandling, Broadcasting {
     }
 
     handleDrawCard(user: User, action: DrawCard) {
+        console.log(`${user.name} draws a card`)
         // Get a random card
         const pool = Object.keys(Card).map(k => Card[k as keyof typeof Card])
         const card = pool[Math.floor(Math.random() * pool.length)]
@@ -94,6 +107,7 @@ export class Game implements ActionHandling, Broadcasting {
     }
 
     handlePlayCard(user: User, action: PlayCard) {
+        console.log(`${user.name} plays ${user.card}`)
         switch (user.card) {
             case Card.Robbery:
             case Card.BulletProof:

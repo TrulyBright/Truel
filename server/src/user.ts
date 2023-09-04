@@ -34,7 +34,7 @@ export class User {
     has_run = false
 
     constructor(public readonly name: string) {
-        this.addActionCallback(this.eventRecorder)
+        this.addEventListener(this.eventRecorder)
     }
 
     addActionCallback(handler: ActionCallback) {
@@ -79,7 +79,7 @@ export class User {
         this.alive = this.cash > 0
         this.card = null
         this.drift = Drift.Hold
-        this.probability = 0.5
+        this.probability = Math.random()
         // reset buff
         this.buff = {
             [Card.Robbery]: false,

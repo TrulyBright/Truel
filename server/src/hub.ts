@@ -25,6 +25,7 @@ export class Hub implements Broadcasting, ActionHandling {
 
     // HACK: hub can handle actions of a user who is not in the hub.
     handleAction(user: User, action: Action) {
+        console.log(`Hub handles ${action.constructor.name} from ${user.name} with args ${JSON.stringify(action)}`)
         switch (action.constructor) {
             case CreateRoom:
                 this.handleCreateRoom(user, action as CreateRoom)
