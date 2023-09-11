@@ -23,7 +23,6 @@ wss.on("connection", (ws) => {
         if (!constructor) throw Error("Unknown action: " + data.type)
         const action = new constructor(...data.args)
         hub.handleAction(user, action)
-        user.afterAction(action)
     })
     ws.on("close", () => {
         hub.removeUser(user)

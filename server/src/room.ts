@@ -50,7 +50,7 @@ export class Room implements Broadcasting, ActionHandling {
     }
 
     handleAction(user: User, action: Action): void {
-        console.log(`Room ${this.id} handles ${action.constructor.name} from ${user.name} with args ${JSON.stringify(action)}`)
+        console.log(`Room ${this.id} handles ${action.constructor.name} from ${user.name} with args ${JSON.stringify(action)} `)
         switch (action.constructor) {
             case Chat:
                 const chat = action as Chat

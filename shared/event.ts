@@ -90,6 +90,7 @@ export class RoomUpdated {
  * 1002: User is not the host
  * 1003: User not found
  * 1004: User is not alive
+ * 9999: Unknown error
  */
 export class GameError {
     constructor(
@@ -116,7 +117,7 @@ export class NewRound {
 
 export class UserShot {
     constructor(
-        public readonly shooter: string,
+        public readonly shooting: string,
         public readonly target: string,
     ) { }
 }

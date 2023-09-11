@@ -1,11 +1,13 @@
 import { User } from "@/user"
 import { ActionHandling, Broadcasting } from "@/interfaces"
-import { BulletProofBroken, CardPlayed, GameError, GameEvent, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied } from "@shared/event"
+import { BulletProofBroken, CardPlayed, GameError, GameEvent, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
 import { Action, ChangeDrift, DrawCard, PlayCard, Shoot } from "@shared/action"
 import { withTimeout } from "@shared/utils"
 import { Card } from "@shared/enums"
 
 export class Game implements ActionHandling, Broadcasting {
+    static turnTimeLimit = 10000 // ms
+    static readonly rounds = 4
     currentPlayer: User
     task: Promise<void> | null = null
     turnPromise: Promise<Action>
@@ -19,19 +21,20 @@ export class Game implements ActionHandling, Broadcasting {
 
     async start() {
         this.players.forEach(p => p.resetForNewGame())
-        for (let i = 1; i <= 4; i++) await this.playRound(i)
+        for (let i = 1; i <= Game.rounds; i++) await this.playRound(i)
     }
 
     async playRound(roundNo: number) {
+        console.log(`Round ${roundNo} starts`)
         this.broadcast(new NewRound(roundNo))
         this.players.forEach(p => p.resetForNewRound())
         this.currentPlayer = this.players[0]
         while (this.survivors.length > 1) {
-            const timeLimit = 1
-            this.broadcast(new NowTurnOf(this.currentPlayer.name))
             console.log(`Now turn of ${this.currentPlayer.name}`)
+            this.broadcast(new NowTurnOf(this.currentPlayer.name))
+            this.currentPlayer.recv(new YourTurn())
             const turnStartedAt = Date.now()
-            this.turnPromise = withTimeout(timeLimit, this.currentPlayer.waitForAction([Shoot, DrawCard, PlayCard]))
+            this.turnPromise = withTimeout(Game.turnTimeLimit, this.currentPlayer.waitForAction([Shoot, DrawCard, PlayCard]))
             let actionPerformed = undefined
             try {
                 actionPerformed = await this.turnPromise
@@ -42,7 +45,7 @@ export class Game implements ActionHandling, Broadcasting {
                 this.handlePlayCard(this.currentPlayer, actionPerformed)
                 if (this.currentPlayer.has_run) continue
                 else {
-                    const timeLeft = timeLimit - (Date.now() - turnStartedAt)
+                    const timeLeft = Game.turnTimeLimit - (Date.now() - turnStartedAt)
                     this.turnPromise = withTimeout(timeLeft, this.currentPlayer.waitForAction([Shoot, DrawCard]))
                     actionPerformed = await this.turnPromise
                 }
@@ -63,12 +66,12 @@ export class Game implements ActionHandling, Broadcasting {
     }
 
     handleShoot(user: User, action: Shoot) {
-        console.log(`${user.name} shoots at ${action.target}`)
         const target = this.players.find(p => p.name === action.target)
         if (!target) {
             user.recv(new GameError(1004))
             return
         }
+        console.log(`${user.name} shoots at ${action.target}`)
         this.broadcast(new UserShot(user.name, target.name))
         if (user.probability > Math.random()) {
             if (target.buff[Card.BulletProof]) {
@@ -107,7 +110,6 @@ export class Game implements ActionHandling, Broadcasting {
     }
 
     handlePlayCard(user: User, action: PlayCard) {
-        console.log(`${user.name} plays ${user.card}`)
         switch (user.card) {
             case Card.Robbery:
             case Card.BulletProof:
@@ -123,6 +125,8 @@ export class Game implements ActionHandling, Broadcasting {
             default: // ??? This should never happen
                 throw new Error("Unknown card: " + user.card)
         }
+        console.log(`${user.name} plays ${user.card}`)
+        user.card = null
         this.broadcast(new CardPlayed(user.name, user.card))
     }
 
