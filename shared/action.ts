@@ -6,7 +6,7 @@ export class CreateRoom {
     constructor(
         public title: string,
         public maxMembers: number,
-        public password: string
+        public password: string | null
     ) { }
 }
 
