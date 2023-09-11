@@ -17,13 +17,12 @@ import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, RoomUpdated, U
 // 10. The room is destroyed.
 test("Scenario #1", () => {
     const hub = new Hub()
-    const user1 = new User("user1")
-    const user2 = new User("user2")
-    const user3WhoFailsToJoin = new User("user3")
     // 1. A user joins.
+    const user1 = new User("user1")
     hub.addUser(user1)
     const user1Created = user1.last50Events.findItemOf(UserCreated) as UserCreated
     expect(user1Created.name).toBe(user1.name)
+    const user2 = new User("user2")
     hub.addUser(user2)
     const user2Created = user1.last50Events.findItemOf(UserCreated) as UserCreated
     expect(user2Created.name).toBe(user2.name)
@@ -33,7 +32,7 @@ test("Scenario #1", () => {
     const maxMembers = 2
     const password = "password"
     // 2. The user creates a room.
-    hub.handleAction(user1, new CreateRoom(title, maxMembers, password))
+    user1.perform(new CreateRoom(title, maxMembers, password))
     const room = user1.room
     expect(hub.rooms.has(room.id)).toBe(true)
     expect(room).not.toBeNull()
@@ -50,7 +49,7 @@ test("Scenario #1", () => {
     expect(roomCreated.maxMembers).toBe(room.maxMembers)
     expect(roomCreated.title).toBe(room.title)
     // 3. Another user joins the room.
-    hub.handleAction(user2, new JoinRoom(room.id, room.password))
+    user2.perform(new JoinRoom(room.id, room.password))
     expect(room.host).toBe(user1)
     expect(room.members).toContain(user1)
     expect(room.members).toContain(user2)
@@ -60,13 +59,15 @@ test("Scenario #1", () => {
         expect(user2JoinedRoom.name).toBe(user2.name)
     })
     // 4. The third user fails to join the room.
-    hub.handleAction(user3WhoFailsToJoin, new JoinRoom(room.id, null))
+    const user3WhoFailsToJoin = new User("user3")
+    hub.addUser(user3WhoFailsToJoin)
+    user3WhoFailsToJoin.perform(new JoinRoom(room.id, null))
     expect(room.members).not.toContain(user3WhoFailsToJoin)
     const errorToUser3 = user3WhoFailsToJoin.last50Events.findItemOf(GameError) as GameError
     expect(errorToUser3.code).toBe(1003)
     // 5. Users in the room chat, which the outsiders cannot see.
     const message = "hello"
-    hub.handleAction(user1, new Chat(message))
+    user1.perform(new Chat(message))
     hub.users.filter(user => user.room !== room).forEach(user => {
         const chatReceived = () => user.last50Events.findItemOf(UserChat) as UserChat
         expect(chatReceived).toThrow()
@@ -77,7 +78,7 @@ test("Scenario #1", () => {
         expect(user1Chat.message).toBe(message)
     })
     // 6. The first user (host) leaves the room.
-    hub.handleAction(user1, new LeaveRoom())
+    user1.perform(new LeaveRoom())
     expect(user1.room).toBeNull()
     expect(room.members).not.toContain(user1)
     const user1LeftRoom = user2.last50Events.findItemOf(UserLeftRoom) as UserLeftRoom
@@ -96,7 +97,7 @@ test("Scenario #1", () => {
         expect(roomUpdated.isPrivate).toBe(room.private)
     })
     // 9. The second user leaves the room.
-    hub.handleAction(user2, new LeaveRoom())
+    user2.perform(new LeaveRoom())
     expect(user2.room).toBeNull()
     expect(room.members).not.toContain(user1)
     expect(room.members).not.toContain(user2)

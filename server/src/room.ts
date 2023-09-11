@@ -5,6 +5,7 @@ import { User } from "@/user"
 import { Game } from "@/game"
 
 export class Room implements Broadcasting, ActionHandling {
+    superActionHandler: ActionHandling
     host: User | null = null
     members: User[] = []
     game: Game | null = null
@@ -50,7 +51,7 @@ export class Room implements Broadcasting, ActionHandling {
     }
 
     handleAction(user: User, action: Action): void {
-        console.log(`Room ${this.id} handles ${action.constructor.name} from ${user.name} with args ${JSON.stringify(action)} `)
+        console.log(`Room ${this.id} handles ${action.constructor.name} from ${user.name}`)
         switch (action.constructor) {
             case Chat:
                 const chat = action as Chat
@@ -60,12 +61,23 @@ export class Room implements Broadcasting, ActionHandling {
                 if (user === this.host) {
                     this.game = new Game(this.members)
                     this.game.task = this.game.start()
+                    this.game.task.then(() => {
+                        this.members.forEach(m => m.setSuperActionHandler(this))
+                    })
                 } else {
                     user.recv(new GameError(1002))
                 }
                 break
             default:
-                this.game!.handleAction(user, action)
+                this.superActionHandler!.handleAction(user, action)
         }
+    }
+
+    setSuperActionHandler(handler: ActionHandling): void {
+        this.superActionHandler = handler
+    }
+
+    unsetSuperActionHandler(): void {
+        this.superActionHandler = null
     }
 }

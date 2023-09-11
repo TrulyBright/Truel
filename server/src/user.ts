@@ -1,13 +1,15 @@
 import { Action, DrawCard, Shoot } from "@shared/action"
-import { GameEvent, YouDied } from "@shared/event"
+import { GameError, GameEvent, YouDied } from "@shared/event"
 import { Queue, withTimeout } from "@shared/utils"
 import { Card, Drift } from "@shared/enums"
 import { Room } from "@/room"
+import { ActionHandling } from "./interfaces"
 
 export type EventHandler = (event: GameEvent) => void
 export type ActionCallback = (action: Action) => void
 
-export class User {
+export class User implements ActionHandling {
+    superActionHandler: ActionHandling | null = null
     actionCallbacks: ActionCallback[] = []
     eventHandler: EventHandler[] = []
     room: Room | null = null
@@ -37,6 +39,35 @@ export class User {
         this.addEventListener(this.eventRecorder)
     }
 
+    perform(action: Action) {
+        console.log(`${this.name} performs ${action.constructor.name}`)
+        this.handleAction(this, action)
+    }
+
+    // `User` is a special case of `ActionHandling`.
+    // So, for `User`, call `perform()` instead of this function `handleAction()`.
+    handleAction(user: User, action: Action) {
+        try {
+            this.superActionHandler!.handleAction(user, action)
+            this.afterAction(action)
+        } catch (e) {
+            console.error(e)
+            this.recv(new GameError(9999))
+        }
+    }
+
+    setSuperActionHandler(handler: ActionHandling) {
+        this.superActionHandler = handler
+    }
+
+    unsetSuperActionHandler() {
+        this.superActionHandler = null
+    }
+
+    afterAction(action: Action) {
+        this.actionCallbacks.forEach(handler => handler(action))
+    }
+
     addActionCallback(handler: ActionCallback) {
         this.actionCallbacks.push(handler)
     }
@@ -45,8 +76,8 @@ export class User {
         this.actionCallbacks = this.actionCallbacks.filter(h => h !== handler)
     }
 
-    afterAction(action: Action) {
-        this.actionCallbacks.forEach(handler => handler(action))
+    recv(event: GameEvent) {
+        this.eventHandler.forEach(handler => handler(event))
     }
 
     addEventListener(handler: EventHandler) {
@@ -57,16 +88,14 @@ export class User {
         this.eventHandler = this.eventHandler.filter(h => h !== handler)
     }
 
-    recv(event: GameEvent) {
-        this.eventHandler.forEach(handler => handler(event))
-    }
-
     joinRoom(room: Room) {
         this.room = room
+        this.setSuperActionHandler(room)
     }
 
     leaveRoom() {
         this.room = null
+        this.unsetSuperActionHandler()
     }
 
     resetForNewGame() {

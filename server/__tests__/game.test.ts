@@ -11,12 +11,12 @@ test("Actual game", async () => {
     const users = [...Array(maxMembers).keys()].map(i => new User(`user${i}`))
     const host = users[0]
     users.forEach(user => hub.addUser(user))
-    hub.handleAction(host, new CreateRoom("room1", maxMembers, "password"))
+    host.perform(new CreateRoom("room1", maxMembers, "password"))
     const room = host.room
     users.filter(user => user !== host).forEach(user => {
-        hub.handleAction(user, new JoinRoom(room.id, room.password))
+        user.perform(new JoinRoom(room.id, room.password))
     })
-    hub.handleAction(host, new StartGame())
+    host.perform(new StartGame())
     const game = host.room.game
     for (let i = 0; i < Game.rounds; i++) {
         while (game.survivors.length > 1) {
@@ -31,7 +31,7 @@ test("Actual game", async () => {
             const shooting = game.currentPlayer
             const target = game.survivors.filter(u => u !== shooting)[0]
             const action = new Shoot(target.name)
-            hub.handleAction(shooting, action)
+            shooting.perform(action)
             await game.turnPromise
             game.players.forEach(p => {
                 const userShot = p.last50Events.findItemOf(UserShot) as UserShot

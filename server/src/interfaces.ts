@@ -7,5 +7,8 @@ export interface Broadcasting {
 }
 
 export interface ActionHandling {
+    superActionHandler: ActionHandling | null
     handleAction(user: User, action: Action): void
+    setSuperActionHandler(handler: ActionHandling): void
+    unsetSuperActionHandler(): void
 }

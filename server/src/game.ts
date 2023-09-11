@@ -6,6 +6,7 @@ import { withTimeout } from "@shared/utils"
 import { Card } from "@shared/enums"
 
 export class Game implements ActionHandling, Broadcasting {
+    superActionHandler: ActionHandling
     static turnTimeLimit = 10000 // ms
     static readonly rounds = 4
     currentPlayer: User
@@ -20,6 +21,7 @@ export class Game implements ActionHandling, Broadcasting {
     }
 
     async start() {
+        this.players.forEach(p => p.setSuperActionHandler(this))
         this.players.forEach(p => p.resetForNewGame())
         for (let i = 1; i <= Game.rounds; i++) await this.playRound(i)
     }
@@ -96,6 +98,7 @@ export class Game implements ActionHandling, Broadcasting {
     }
 
     handleAction(user: User, action: Action): void {
+        console.log(`Game handles ${action.constructor.name} from ${user.name}`)
         switch (action.constructor) {
             case Shoot:
             case DrawCard:
@@ -105,8 +108,16 @@ export class Game implements ActionHandling, Broadcasting {
                 const changeDrift = action as ChangeDrift
                 this.handleChangeDrift(user, changeDrift)
             default:
-                throw new Error("Unknown action: " + action.constructor.name)
+                this.superActionHandler!.handleAction(user, action)
         }
+    }
+
+    setSuperActionHandler(handler: ActionHandling): void {
+        this.superActionHandler = handler
+    }
+
+    unsetSuperActionHandler(): void {
+        this.superActionHandler = null
     }
 
     handlePlayCard(user: User, action: PlayCard) {

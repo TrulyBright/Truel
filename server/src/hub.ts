@@ -5,6 +5,7 @@ import { Room } from "@/room";
 import { User } from "@/user";
 
 export class Hub implements Broadcasting, ActionHandling {
+    superActionHandler: ActionHandling
     users: User[] = []
     rooms: Map<number, Room> = new Map()
     roomIdCounter = 0
@@ -15,37 +16,39 @@ export class Hub implements Broadcasting, ActionHandling {
 
     addUser(user: User) {
         this.users.push(user)
+        user.setSuperActionHandler(this)
         this.broadcast(new UserCreated(user.name))
     }
 
     removeUser(user: User) {
+        user.unsetSuperActionHandler()
         this.users = this.users.filter(u => u !== user)
         this.broadcast(new UserDeleted(user.name))
     }
 
-    // HACK: hub can handle actions of a user who is not in the hub.
     handleAction(user: User, action: Action) {
-        console.log(`Hub handles ${action.constructor.name} from ${user.name} with args ${JSON.stringify(action)} `)
-        try {
-            switch (action.constructor) {
-                case CreateRoom:
-                    this.handleCreateRoom(user, action as CreateRoom)
-                    break
-                case JoinRoom:
-                    this.handleJoinRoom(user, action as JoinRoom)
-                    break
-                case LeaveRoom:
-                    this.handleLeaveRoom(user, action as LeaveRoom)
-                    break
-                default:
-                    user.room!.handleAction(user, action)
-            }
-            user.afterAction(action)
-        } catch (e) {
-            console.log(e)
-            console.log(user.last50Events)
-            user.recv(new GameError(9999))
+        console.log(`Hub handles ${action.constructor.name} from ${user.name}`)
+        switch (action.constructor) {
+            case CreateRoom:
+                this.handleCreateRoom(user, action as CreateRoom)
+                break
+            case JoinRoom:
+                this.handleJoinRoom(user, action as JoinRoom)
+                break
+            case LeaveRoom:
+                this.handleLeaveRoom(user, action as LeaveRoom)
+                break
+            default:
+                throw new Error(`Unhandled action: ${JSON.stringify(action)}`)
         }
+    }
+
+    setSuperActionHandler(handler: ActionHandling): void {
+        this.superActionHandler = handler
+    }
+
+    unsetSuperActionHandler(): void {
+        this.superActionHandler = null
     }
 
     handleCreateRoom(user: User, action: CreateRoom) {
@@ -54,6 +57,7 @@ export class Hub implements Broadcasting, ActionHandling {
             return
         }
         const room = new Room(this.roomIdCounter++, action.title, action.maxMembers, action.password)
+        room.setSuperActionHandler(this)
         this.rooms.set(room.id, room)
         this.handleAction(user, new JoinRoom(room.id, room.password))
         room.setHost(user)
@@ -83,12 +87,14 @@ export class Hub implements Broadcasting, ActionHandling {
             } else {
                 this.broadcast(new RoomUpdated(left.id, left.title, left.maxMembers, left.private))
             }
+            user.setSuperActionHandler(this)
         } else {
             user.recv(new GameError(1001))
         }
     }
 
     deleteRoom(room: Room) {
+        room.unsetSuperActionHandler()
         this.rooms.delete(room.id)
         this.broadcast(new RoomDeleted(room.id))
     }
