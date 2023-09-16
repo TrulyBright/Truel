@@ -8,6 +8,7 @@ import {
   Pressable,
   TextInput,
 } from "react-native";
+import Slider from "@react-native-community/slider";
 import { CreateRoom } from "@shared/action";
 import { Socket } from "../networking/socket";
 
@@ -16,6 +17,8 @@ const CreateRoomModal = (props: {
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [roomName, setRoomName] = React.useState("");
+  const [maxMembers, setMaxMembers] = React.useState(8);
+  const [roomPassword, setRoomPassword] = React.useState("");
   return (
     <View style={styles.centeredView}>
       <Modal
@@ -36,6 +39,15 @@ const CreateRoomModal = (props: {
               placeholder="Room Name"
               value={roomName}
             ></TextInput>
+            <Text style={styles.modalText}>{maxMembers} players</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={3}
+              maximumValue={8}
+              step={1}
+              value={maxMembers}
+              onValueChange={setMaxMembers}
+            ></Slider>
             <Pressable
               style={[styles.button, styles.buttonClose]}
               onPress={async () => {
@@ -64,12 +76,6 @@ const createRoom = async () => {
 };
 
 const styles = StyleSheet.create({
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-  },
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -110,6 +116,16 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: "center",
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+  },
+  slider: {
+    width: 200,
+    height: 40,
   },
 });
 
