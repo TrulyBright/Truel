@@ -25,7 +25,9 @@ export class Hub implements Broadcasting, ActionHandling {
     }
 
     removeUser(user: User) {
-        user.unsetSuperActionHandler()
+        if (user.room) {
+            user.perform(new LeaveRoom())
+        }
         this.users = this.users.filter(u => u !== user)
         this.broadcast(new UserDeleted(user.name))
     }
