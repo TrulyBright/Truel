@@ -1,23 +1,17 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { CreateRoom } from "@shared/action"
+import { View } from "react-native";
+import CreateRoomModal from "./components/CreateRoomModal";
+import { useState } from "react";
 
-export default function App() {
-  const a = new CreateRoom("test", 8, null)
+const App = () => {
+  const [modalVisible, setModalVisible] = useState(false);
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <Text>{JSON.stringify(a)}</Text>
-      <StatusBar style="auto" />
+    <View>
+      <CreateRoomModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
