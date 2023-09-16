@@ -56,12 +56,12 @@ export class Hub implements Broadcasting, ActionHandling {
             user.recv(new GameError(1002))
             return
         }
-        const room = new Room(this.roomIdCounter++, action.title, action.maxMembers, action.password)
+        const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password)
         room.setSuperActionHandler(this)
         this.rooms.set(room.id, room)
         this.handleAction(user, new JoinRoom(room.id, room.password))
         room.setHost(user)
-        this.broadcast(new RoomCreated(room.id, room.title, room.maxMembers, room.private))
+        this.broadcast(new RoomCreated(room.id, room.name, room.maxMembers, room.private))
     }
 
     handleJoinRoom(user: User, action: JoinRoom) {
@@ -73,7 +73,7 @@ export class Hub implements Broadcasting, ActionHandling {
         } else {
             room.addMember(user)
             user.joinRoom(room)
-            this.broadcast(new RoomUpdated(room.id, room.title, room.maxMembers, room.private))
+            this.broadcast(new RoomUpdated(room.id, room.name, room.maxMembers, room.private))
         }
     }
 
@@ -85,7 +85,7 @@ export class Hub implements Broadcasting, ActionHandling {
             if (left.empty) {
                 this.deleteRoom(left)
             } else {
-                this.broadcast(new RoomUpdated(left.id, left.title, left.maxMembers, left.private))
+                this.broadcast(new RoomUpdated(left.id, left.name, left.maxMembers, left.private))
             }
             user.setSuperActionHandler(this)
         } else {

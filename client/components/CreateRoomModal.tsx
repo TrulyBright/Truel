@@ -15,7 +15,7 @@ const CreateRoomModal = (props: {
   modalVisible: boolean;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const [roomTitle, setRoomTitle] = React.useState("");
+  const [roomName, setRoomName] = React.useState("");
   return (
     <View style={styles.centeredView}>
       <Modal
@@ -32,9 +32,9 @@ const CreateRoomModal = (props: {
             <Text>Create Room</Text>
             <TextInput
               style={styles.input}
-              onChangeText={setRoomTitle}
-              placeholder="Room Title"
-              value={roomTitle}
+              onChangeText={setRoomName}
+              placeholder="Room Name"
+              value={roomName}
             ></TextInput>
             <Pressable
               style={[styles.button, styles.buttonClose]}

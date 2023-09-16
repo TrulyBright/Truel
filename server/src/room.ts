@@ -11,7 +11,7 @@ export class Room implements Broadcasting, ActionHandling {
     game: Game | null = null
     constructor(
         public readonly id: number,
-        public title: string,
+        public name: string,
         public maxMembers: number,
         public password: string,
     ) { }

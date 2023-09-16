@@ -56,7 +56,7 @@ export class UserChat {
 export class RoomCreated {
     constructor(
         public readonly id: number,
-        public readonly title: string,
+        public readonly name: string,
         public readonly maxMembers: number,
         public readonly isPrivate: boolean
     ) { }
@@ -77,7 +77,7 @@ export class RoomDeleted {
 export class RoomUpdated {
     constructor(
         public readonly id: number,
-        public readonly title: string,
+        public readonly name: string,
         public readonly maxMembers: number,
         public readonly isPrivate: boolean,
     ) { }

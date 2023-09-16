@@ -4,7 +4,7 @@ export type Action = CreateRoom | JoinRoom | LeaveRoom | Chat | StartGame | Shoo
 
 export class CreateRoom {
     constructor(
-        public title: string,
+        public name: string,
         public maxMembers: number,
         public password: string | null
     ) { }
