@@ -57,6 +57,7 @@ export class RoomCreated {
     constructor(
         public readonly id: number,
         public readonly name: string,
+        public readonly host: string,
         public readonly maxMembers: number,
         public readonly isPrivate: boolean
     ) { }
@@ -78,6 +79,7 @@ export class RoomUpdated {
     constructor(
         public readonly id: number,
         public readonly name: string,
+        public readonly host: string,
         public readonly maxMembers: number,
         public readonly members: string[],
         public readonly isPrivate: boolean,
