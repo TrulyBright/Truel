@@ -8,17 +8,11 @@ export class Room {
     members: User[]
     maxMembers: number
 
-    constructor(e: RoomCreated) {
+    constructor(e: RoomCreated | RoomUpdated) {
         this.id = e.id
         this.name = e.name
         this.host = new User(e.host)
         this.maxMembers = e.maxMembers
-        this.members = []
-    }
-
-    public update(event: RoomUpdated) {
-        this.name = event.name
-        this.maxMembers = event.maxMembers
-        this.members = event.members.map(m => new User(m))
+        this.members = e.members.map(m => new User(m))
     }
 }
