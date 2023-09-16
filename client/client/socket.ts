@@ -1,4 +1,5 @@
 import { Action } from "@shared/action"
+import { GameEvent } from "@shared/event"
 
 /**
  * Socket class, singleton.
@@ -8,26 +9,9 @@ export class Socket {
     private socket: WebSocket
     private constructor() {
         this.socket = new WebSocket("ws://localhost:8080")
-        this.socket.onopen = this.onOpen.bind(this)
-        this.socket.onmessage = this.onMessage.bind(this)
-        this.socket.onclose = this.onClose.bind(this)
-        this.socket.onerror = this.onError.bind(this)
-    }
-
-    private onOpen() {
-        console.log("Connection opened")
-    }
-
-    private onMessage(msg: WebSocketMessageEvent) {
-        console.log("Received message", msg)
-    }
-
-    private onClose() {
-        console.log("Connection closed")
-    }
-
-    private onError(err: Event) {
-        console.error(err)
+        this.socket.addEventListener("message", (event => {
+            console.log(JSON.parse(event.data))
+        }))
     }
 
     public static get instance(): Socket {
@@ -50,9 +34,20 @@ export class Socket {
     }
 
     public perform(action: Action) {
-        this.socket.send(JSON.stringify({
+        const data = JSON.stringify({
             type: action.constructor.name,
             args: action
-        }))
+        })
+        console.log("Sending message", data)
+        this.socket.send(data)
+    }
+
+    public addEventListener<T extends GameEvent>(event: Function, callback: (event: T) => void) {
+        this.socket.addEventListener("message", (msg) => {
+            const data = JSON.parse(msg.data.toString())
+            if (data.type === event.name) {
+                callback(data.args)
+            }
+        })
     }
 }

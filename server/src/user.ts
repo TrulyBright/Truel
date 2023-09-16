@@ -40,7 +40,7 @@ export class User implements ActionHandling {
     }
 
     perform(action: Action) {
-        console.log(`${this.name} performs ${action.constructor.name}`)
+        console.log(`${this.name} performs ${action.constructor.name}: ${JSON.stringify(action)}`)
         this.handleAction(this, action)
     }
 

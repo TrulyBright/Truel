@@ -21,7 +21,8 @@ wss.on("connection", (ws) => {
         const data = JSON.parse(message.toString())
         const constructor = actionConstructors[data.type]
         if (!constructor) console.error("Unknown action: " + data)
-        const action = new constructor({ ...data.args })
+        const action = new constructor()
+        Object.assign(action, data.args)
         user.perform(action)
     })
     ws.on("close", () => {

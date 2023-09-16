@@ -2,6 +2,7 @@ import { RoomCreated, RoomDeleted, RoomUpdated } from "@shared/event"
 import { Room } from "./room"
 
 export const RoomCreatedFactory = (room: Room) => {
+    console.log(room)
     return new RoomCreated(room.id, room.name, room.host.name, room.maxMembers, room.private)
 }
 

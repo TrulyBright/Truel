@@ -62,10 +62,10 @@ export class Hub implements Broadcasting, ActionHandling {
         }
         const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password)
         room.setSuperActionHandler(this)
+        room.setHost(user)
         this.rooms.set(room.id, room)
         this.broadcast(RoomCreatedFactory(room))
         this.handleAction(user, new JoinRoom(room.id, room.password))
-        room.setHost(user)
     }
 
     handleJoinRoom(user: User, action: JoinRoom) {

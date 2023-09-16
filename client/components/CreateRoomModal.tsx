@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import { CreateRoom } from "@shared/action";
-import { Socket } from "../networking/socket";
+import { Socket } from "../client/socket";
 
 const CreateRoomModal = (props: {
   modalVisible: boolean;
