@@ -37,6 +37,18 @@ export class Socket {
         return Socket._instance
     }
 
+    public static async waitForConnectionOpen(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const socket = Socket.instance.socket
+            if (socket.readyState === WebSocket.OPEN) {
+                resolve()
+            } else {
+                socket.addEventListener("open", () => resolve())
+                socket.addEventListener("error", () => reject())
+            }
+        })
+    }
+
     public perform(action: Action) {
         this.socket.send(JSON.stringify({
             type: action.constructor.name,

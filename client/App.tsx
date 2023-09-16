@@ -1,13 +1,13 @@
-import { View } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import CreateRoomModal from "./components/CreateRoomModal";
 import { useState } from "react";
 import { Socket } from "./networking/socket";
 
 const App = () => {
+  Socket.waitForConnectionOpen(); // TODO: await
   const [modalVisible, setModalVisible] = useState(false);
-  const socket = Socket.instance;
   return (
-    <View>
+    <View style={styles.centeredView}>
       <CreateRoomModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
@@ -15,5 +15,13 @@ const App = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default App;
