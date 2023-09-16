@@ -20,7 +20,7 @@ wss.on("connection", (ws) => {
     ws.on("message", (message) => {
         const data = JSON.parse(message.toString())
         const constructor = actionConstructors[data.type]
-        if (!constructor) throw Error("Unknown action: " + data.type)
+        if (!constructor) console.error("Unknown action: " + data)
         const action = new constructor(...data.args)
         user.perform(action)
     })
