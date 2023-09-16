@@ -3,6 +3,7 @@ import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreate
 import { ActionHandling, Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
 import { User } from "@/user";
+import { RoomCreatedFactory, RoomDeletedFactory, RoomUpdatedFactory } from "./factory";
 
 export class Hub implements Broadcasting, ActionHandling {
     superActionHandler: ActionHandling
@@ -18,6 +19,9 @@ export class Hub implements Broadcasting, ActionHandling {
         this.users.push(user)
         user.setSuperActionHandler(this)
         this.broadcast(new UserCreated(user.name))
+        this.rooms.forEach(room => {
+            user.recv(RoomCreatedFactory(room))
+        })
     }
 
     removeUser(user: User) {
@@ -59,7 +63,7 @@ export class Hub implements Broadcasting, ActionHandling {
         const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password)
         room.setSuperActionHandler(this)
         this.rooms.set(room.id, room)
-        this.broadcast(new RoomCreated(room.id, room.name, room.maxMembers, room.private))
+        this.broadcast(RoomCreatedFactory(room))
         this.handleAction(user, new JoinRoom(room.id, room.password))
         room.setHost(user)
     }
@@ -73,7 +77,7 @@ export class Hub implements Broadcasting, ActionHandling {
         } else {
             room.addMember(user)
             user.joinRoom(room)
-            this.broadcast(new RoomUpdated(room.id, room.name, room.maxMembers, room.private))
+            this.broadcast(RoomUpdatedFactory(room))
         }
     }
 
@@ -85,7 +89,7 @@ export class Hub implements Broadcasting, ActionHandling {
             if (left.empty) {
                 this.deleteRoom(left)
             } else {
-                this.broadcast(new RoomUpdated(left.id, left.name, left.maxMembers, left.private))
+                this.broadcast(RoomUpdatedFactory(left))
             }
             user.setSuperActionHandler(this)
         } else {
@@ -96,6 +100,6 @@ export class Hub implements Broadcasting, ActionHandling {
     deleteRoom(room: Room) {
         room.unsetSuperActionHandler()
         this.rooms.delete(room.id)
-        this.broadcast(new RoomDeleted(room.id))
+        this.broadcast(RoomDeletedFactory(room))
     }
 }
