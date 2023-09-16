@@ -1,9 +1,9 @@
 {
     "scripts": {
-        "bundle": "webpack --mode=production",
+        "bundle:prod": "webpack --mode=production",
         "watch": "webpack --watch --mode=development",
         "start": "node dist/main.js",
-        "bundle-prod": "webpack --mode=production",
+        "bundle:dev": "webpack --mode=development",
         "test": "jest --detectOpenHandles"
     },
     "dependencies": {

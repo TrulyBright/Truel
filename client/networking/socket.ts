@@ -1,3 +1,5 @@
+import { Action } from "@shared/action"
+
 /**
  * Socket class, singleton.
  */
@@ -5,7 +7,7 @@ export class Socket {
     private static _instance: Socket
     private socket: WebSocket
     private constructor() {
-        this.socket = new WebSocket("ws://localhost:3000")
+        this.socket = new WebSocket("ws://localhost:8080")
         this.socket.onopen = this.onOpen.bind(this)
         this.socket.onmessage = this.onMessage.bind(this)
         this.socket.onclose = this.onClose.bind(this)
@@ -16,7 +18,7 @@ export class Socket {
         console.log("Connection opened")
     }
 
-    private onMessage(msg: MessageEvent) {
+    private onMessage(msg: WebSocketMessageEvent) {
         console.log("Received message", msg)
     }
 
@@ -33,5 +35,12 @@ export class Socket {
             Socket._instance = new Socket()
         }
         return Socket._instance
+    }
+
+    public perform(action: Action) {
+        this.socket.send(JSON.stringify({
+            type: action.constructor.name,
+            args: action
+        }))
     }
 }

@@ -32,12 +32,13 @@ const CreateRoomModal = (props: {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text>Create Room</Text>
+            <Text style={styles.modalHeader}>Create Room</Text>
             <TextInput
               style={styles.input}
               onChangeText={setRoomName}
               placeholder="Room Name"
               value={roomName}
+              maxLength={16}
             ></TextInput>
             <Text style={styles.modalText}>{maxMembers} players</Text>
             <Slider
@@ -48,10 +49,21 @@ const CreateRoomModal = (props: {
               value={maxMembers}
               onValueChange={setMaxMembers}
             ></Slider>
+            <TextInput
+              style={styles.input}
+              onChangeText={setRoomPassword}
+              placeholder="Password"
+              secureTextEntry={true}
+              value={roomPassword}
+            ></TextInput>
             <Pressable
               style={[styles.button, styles.buttonClose]}
               onPress={async () => {
-                await createRoom().then(() => {
+                await performCreateRoom(
+                  roomName,
+                  maxMembers,
+                  roomPassword
+                ).then(() => {
                   props.setModalVisible(!props.modalVisible);
                 });
               }}
@@ -71,8 +83,18 @@ const CreateRoomModal = (props: {
   );
 };
 
-const createRoom = async () => {
+const performCreateRoom = async (
+  name: string,
+  maxMembers: number,
+  password: string | null
+) => {
+  const createRoomAction = new CreateRoom(
+    name,
+    maxMembers,
+    password === "" ? null : password
+  );
   const socket = Socket.instance;
+  socket.perform(createRoomAction);
 };
 
 const styles = StyleSheet.create({
@@ -112,6 +134,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  modalHeader: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 20,
   },
   modalText: {
     marginBottom: 15,
