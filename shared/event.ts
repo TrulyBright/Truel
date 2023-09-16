@@ -79,6 +79,7 @@ export class RoomUpdated {
         public readonly id: number,
         public readonly name: string,
         public readonly maxMembers: number,
+        public readonly members: string[],
         public readonly isPrivate: boolean,
     ) { }
 }
