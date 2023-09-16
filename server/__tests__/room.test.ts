@@ -28,16 +28,16 @@ test("Scenario #1", () => {
     expect(user2Created.name).toBe(user2.name)
     user1.last50Events.clear()
     user2.last50Events.clear()
-    const title = "room1"
+    const name = "room1"
     const maxMembers = 2
     const password = "password"
     // 2. The user creates a room.
-    user1.perform(new CreateRoom(title, maxMembers, password))
+    user1.perform(new CreateRoom(name, maxMembers, password))
     const room = user1.room
     expect(hub.rooms.has(room.id)).toBe(true)
     expect(room).not.toBeNull()
     expect(room).toBeInstanceOf(Room)
-    expect(room.title).toBe(title)
+    expect(room.name).toBe(name)
     expect(room.host).toBe(user1)
     expect(room.private).toBe(password !== null)
     expect(room.members).toContain(user1)
@@ -47,7 +47,7 @@ test("Scenario #1", () => {
     const roomCreated = user2.last50Events.findItemOf(RoomCreated) as RoomCreated
     expect(roomCreated.id).toBe(room.id)
     expect(roomCreated.maxMembers).toBe(room.maxMembers)
-    expect(roomCreated.title).toBe(room.title)
+    expect(roomCreated.name).toBe(room.name)
     // 3. Another user joins the room.
     user2.perform(new JoinRoom(room.id, room.password))
     expect(room.host).toBe(user1)
@@ -92,7 +92,7 @@ test("Scenario #1", () => {
     hub.users.forEach(user => {
         const roomUpdated = user.last50Events.findItemOf(RoomUpdated) as RoomUpdated
         expect(roomUpdated.id).toBe(room.id)
-        expect(roomUpdated.title).toBe(room.title)
+        expect(roomUpdated.name).toBe(room.name)
         expect(roomUpdated.maxMembers).toBe(room.maxMembers)
         expect(roomUpdated.isPrivate).toBe(room.private)
     })
