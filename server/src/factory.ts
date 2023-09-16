@@ -3,7 +3,7 @@ import { Room } from "./room"
 
 export const RoomCreatedFactory = (room: Room) => {
     console.log(room)
-    return new RoomCreated(room.id, room.name, room.host.name, room.maxMembers, room.private)
+    return new RoomCreated(room.id, room.name, room.host.name, room.maxMembers, [], room.private)
 }
 
 export const RoomUpdatedFactory = (room: Room) => {

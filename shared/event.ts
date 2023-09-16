@@ -59,6 +59,7 @@ export class RoomCreated {
         public readonly name: string,
         public readonly host: string,
         public readonly maxMembers: number,
+        public readonly members: string[],
         public readonly isPrivate: boolean
     ) { }
 }
