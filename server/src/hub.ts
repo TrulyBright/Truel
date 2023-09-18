@@ -1,15 +1,28 @@
-import { Action, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action";
+import { Action, ChangeDrift, Chat, CreateRoom, DrawCard, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
 import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreated, UserDeleted } from "@shared/event";
-import { ActionHandling, Broadcasting } from "@/interfaces";
+import { Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
 import { User } from "@/user";
 import { RoomCreatedFactory, RoomDeletedFactory, RoomUpdatedFactory } from "./factory";
+import { EventEmitter } from "node:events";
 
-export class Hub implements Broadcasting, ActionHandling {
-    superActionHandler: ActionHandling
+export class Hub extends EventEmitter implements Broadcasting {
     users: User[] = []
     rooms: Map<number, Room> = new Map()
     roomIdCounter = 0
+
+    constructor() {
+        super()
+        this.on(CreateRoom.name, (user: User, action: CreateRoom) => this.handleCreateRoom(user, action))
+        this.on(JoinRoom.name, (user: User, action: JoinRoom) => this.handleJoinRoom(user, action))
+        this.on(LeaveRoom.name, (user: User, action: LeaveRoom) => this.handleLeaveRoom(user, action))
+        this.on(Chat.name, (user: User, action: Chat) => user.room.handleChat(user, action))
+        this.on(StartGame.name, (user: User, action: StartGame) => user.room.handleStartGame(user, action))
+        this.on(Shoot.name, (user: User, action: Shoot) => user.room.game.emitShoot(user, action))
+        this.on(DrawCard.name, (user: User, action: DrawCard) => user.room.game.emitDrawCard(user, action))
+        this.on(PlayCard.name, (user: User, action: PlayCard) => user.room.game.handlePlayCard(user, action))
+        this.on(ChangeDrift.name, (user: User, action: ChangeDrift) => user.room.game.handleChangeDrift(user, action))
+    }
 
     broadcast(event: GameEvent) {
         this.users.forEach(user => user.recv(event))
@@ -17,7 +30,6 @@ export class Hub implements Broadcasting, ActionHandling {
 
     addUser(user: User) {
         this.users.push(user)
-        user.setSuperActionHandler(this)
         this.broadcast(new UserCreated(user.name))
         this.rooms.forEach(room => {
             user.recv(RoomCreatedFactory(room))
@@ -26,35 +38,10 @@ export class Hub implements Broadcasting, ActionHandling {
 
     removeUser(user: User) {
         if (user.room) {
-            user.perform(new LeaveRoom())
+            this.emit(LeaveRoom.name, user, new LeaveRoom())
         }
         this.users = this.users.filter(u => u !== user)
         this.broadcast(new UserDeleted(user.name))
-    }
-
-    handleAction(user: User, action: Action) {
-        console.log(`Hub handles ${action.constructor.name} from ${user.name}`)
-        switch (action.constructor) {
-            case CreateRoom:
-                this.handleCreateRoom(user, action as CreateRoom)
-                break
-            case JoinRoom:
-                this.handleJoinRoom(user, action as JoinRoom)
-                break
-            case LeaveRoom:
-                this.handleLeaveRoom(user, action as LeaveRoom)
-                break
-            default:
-                throw new Error(`Unhandled action: ${JSON.stringify(action)}`)
-        }
-    }
-
-    setSuperActionHandler(handler: ActionHandling): void {
-        this.superActionHandler = handler
-    }
-
-    unsetSuperActionHandler(): void {
-        this.superActionHandler = null
     }
 
     handleCreateRoom(user: User, action: CreateRoom) {
@@ -63,11 +50,10 @@ export class Hub implements Broadcasting, ActionHandling {
             return
         }
         const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password)
-        room.setSuperActionHandler(this)
         room.setHost(user)
         this.rooms.set(room.id, room)
         this.broadcast(RoomCreatedFactory(room))
-        this.handleAction(user, new JoinRoom(room.id, room.password))
+        this.emit(JoinRoom.name, user, new JoinRoom(room.id, room.password))
     }
 
     handleJoinRoom(user: User, action: JoinRoom) {
@@ -93,14 +79,12 @@ export class Hub implements Broadcasting, ActionHandling {
             } else {
                 this.broadcast(RoomUpdatedFactory(left))
             }
-            user.setSuperActionHandler(this)
         } else {
             user.recv(new GameError(1001))
         }
     }
 
     deleteRoom(room: Room) {
-        room.unsetSuperActionHandler()
         this.rooms.delete(room.id)
         this.broadcast(RoomDeletedFactory(room))
     }

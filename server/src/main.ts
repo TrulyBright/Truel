@@ -8,7 +8,7 @@ const hub = new Hub()
 
 wss.on("connection", (ws) => {
     const user = new User("test")
-    user.addEventListener(event => {
+    user.on("GameEvent", event => {
         const data = JSON.stringify({
             type: event.constructor.name,
             args: event
@@ -23,7 +23,7 @@ wss.on("connection", (ws) => {
         if (!constructor) console.error("Unknown action: " + data)
         const action = new constructor()
         Object.assign(action, data.args)
-        user.perform(action)
+        hub.emit(action.constructor.name, user, action)
     })
     ws.on("close", () => {
         hub.removeUser(user)

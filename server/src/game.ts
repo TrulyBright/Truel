@@ -1,27 +1,25 @@
 import { User } from "@/user"
-import { ActionHandling, Broadcasting } from "@/interfaces"
+import { EventEmitter } from "node:events"
+import { Broadcasting } from "@/interfaces"
 import { BulletProofBroken, CardPlayed, GameError, GameEvent, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
-import { Action, ChangeDrift, DrawCard, PlayCard, Shoot } from "@shared/action"
-import { withTimeout } from "@shared/utils"
+import { Action, ChangeDrift, DrawCard, PlayCard, Shoot, actionConstructors } from "@shared/action"
 import { Card } from "@shared/enums"
 
-export class Game implements ActionHandling, Broadcasting {
-    superActionHandler: ActionHandling
+export class Game extends EventEmitter implements Broadcasting {
     static turnTimeLimit = 10000 // ms
     static readonly rounds = 4
     currentPlayer: User
-    task: Promise<void> | null = null
-    turnPromise: Promise<Action>
     constructor(
         public players: User[],
-    ) { }
+    ) {
+        super()
+    }
 
     broadcast(event: GameEvent): void {
         this.players.forEach(player => player.recv(event))
     }
 
     async start() {
-        this.players.forEach(p => p.setSuperActionHandler(this))
         this.players.forEach(p => p.resetForNewGame())
         for (let i = 1; i <= Game.rounds; i++) await this.playRound(i)
     }
@@ -35,45 +33,45 @@ export class Game implements ActionHandling, Broadcasting {
             console.log(`Now turn of ${this.currentPlayer.name}`)
             this.broadcast(new NowTurnOf(this.currentPlayer.name))
             this.currentPlayer.recv(new YourTurn())
-            const turnStartedAt = Date.now()
-            this.turnPromise = withTimeout(Game.turnTimeLimit, this.currentPlayer.waitForAction([Shoot, DrawCard, PlayCard]))
-            let actionPerformed = undefined
-            try {
-                actionPerformed = await this.turnPromise
-            } catch (e) {
-                actionPerformed = null
-            }
-            if (actionPerformed instanceof PlayCard) {
-                this.handlePlayCard(this.currentPlayer, actionPerformed)
-                if (this.currentPlayer.has_run) continue
-                else {
-                    const timeLeft = Game.turnTimeLimit - (Date.now() - turnStartedAt)
-                    this.turnPromise = withTimeout(timeLeft, this.currentPlayer.waitForAction([Shoot, DrawCard]))
-                    actionPerformed = await this.turnPromise
-                }
-            }
-            if (actionPerformed instanceof Shoot && actionPerformed.target !== this.currentPlayer.name) {
-                this.handleShoot(this.currentPlayer, actionPerformed)
-            } else if (actionPerformed instanceof DrawCard) {
-                this.handleDrawCard(this.currentPlayer, actionPerformed)
-            } else { // It's a timeout or an illegal Shoot Action. Shoot at a random player
-                const theOthers = this.survivors.filter(u => u !== this.currentPlayer)
-                const target = theOthers[Math.floor(Math.random() * theOthers.length)]
-                this.handleShoot(this.currentPlayer, new Shoot(target.name))
-            }
-            const nextPlayerIndex = this.survivors.indexOf(this.currentPlayer) + 1
-            this.currentPlayer = this.survivors[nextPlayerIndex % this.survivors.length]
-            console.log("Survivors: " + this.survivors.map(p => p.name).join(", "))
+            await this.playTurn()
         }
     }
 
-    handleShoot(user: User, action: Shoot) {
-        const target = this.players.find(p => p.name === action.target)
-        if (!target) {
+    async playTurn() {
+        const performed: Shoot | DrawCard = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                // On timeout, shoot at a random player
+                const target = this.players[Math.floor(Math.random() * this.players.length)]
+                resolve(new Shoot(target.name))
+            }, Game.turnTimeLimit)
+            const finisher = (user: User, action: Action) => {
+                clearTimeout(timeout)
+                resolve(action)
+            }
+            this.once(Shoot.name, finisher)
+            this.once(DrawCard.name, finisher)
+        })
+        if (performed instanceof Shoot) this.handleShoot(this.currentPlayer, performed)
+        else this.handleDrawCard(this.currentPlayer, performed)
+    }
+
+    emitShoot(user: User, action: Shoot) {
+        if (this.currentPlayer !== user) return
+        if (!this.players.find(p => p.name === action.target)) {
             user.recv(new GameError(1004))
             return
         }
+        this.emit(Shoot.name, user, action)
+    }
+
+    emitDrawCard(user: User, action: DrawCard) {
+        if (this.currentPlayer !== user) return
+        this.emit(DrawCard.name, user, action)
+    }
+
+    handleShoot(user: User, action: Shoot) {
         console.log(`${user.name} shoots at ${action.target}`)
+        const target = this.players.find(p => p.name === action.target)
         this.broadcast(new UserShot(user.name, target.name))
         if (user.probability > Math.random()) {
             if (target.buff[Card.BulletProof]) {
@@ -97,30 +95,9 @@ export class Game implements ActionHandling, Broadcasting {
         this.broadcast(new UserDrewCard(user.name))
     }
 
-    handleAction(user: User, action: Action): void {
-        console.log(`Game handles ${action.constructor.name} from ${user.name}`)
-        switch (action.constructor) {
-            case Shoot:
-            case DrawCard:
-            case PlayCard:
-                break // Let `playRound()` handle it
-            case ChangeDrift:
-                const changeDrift = action as ChangeDrift
-                this.handleChangeDrift(user, changeDrift)
-            default:
-                this.superActionHandler!.handleAction(user, action)
-        }
-    }
-
-    setSuperActionHandler(handler: ActionHandling): void {
-        this.superActionHandler = handler
-    }
-
-    unsetSuperActionHandler(): void {
-        this.superActionHandler = null
-    }
-
     handlePlayCard(user: User, action: PlayCard) {
+        if (this.currentPlayer !== user) return
+        console.log(`${user.name} plays ${user.card}`)
         switch (user.card) {
             case Card.Robbery:
             case Card.BulletProof:
@@ -133,15 +110,15 @@ export class Game implements ActionHandling, Broadcasting {
                 break
             case Card.Run:
                 user.has_run = true
-            default: // ??? This should never happen
+            default:
                 throw new Error("Unknown card: " + user.card)
         }
-        console.log(`${user.name} plays ${user.card}`)
         user.card = null
         this.broadcast(new CardPlayed(user.name, user.card))
     }
 
     handleChangeDrift(user: User, action: ChangeDrift) {
+        if (!this.players.includes(user)) return
         user.drift = action.drift
         user.recv(new NewDrift(user.drift))
     }

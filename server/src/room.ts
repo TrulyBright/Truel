@@ -1,11 +1,10 @@
 import { Action, Chat, StartGame } from "@shared/action"
 import { GameError, GameEvent, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
-import { ActionHandling, Broadcasting } from "@/interfaces"
+import { Broadcasting } from "@/interfaces"
 import { User } from "@/user"
 import { Game } from "@/game"
 
-export class Room implements Broadcasting, ActionHandling {
-    superActionHandler: ActionHandling
+export class Room implements Broadcasting {
     host: User | null = null
     members: User[] = []
     game: Game | null = null
@@ -50,34 +49,16 @@ export class Room implements Broadcasting, ActionHandling {
         this.broadcast(new NewHost(user.name))
     }
 
-    handleAction(user: User, action: Action): void {
-        console.log(`Room ${this.id} handles ${action.constructor.name} from ${user.name}`)
-        switch (action.constructor) {
-            case Chat:
-                const chat = action as Chat
-                this.broadcast(new UserChat(user.name, chat.message))
-                break
-            case StartGame:
-                if (user === this.host) {
-                    this.game = new Game(this.members)
-                    this.game.task = this.game.start()
-                    this.game.task.then(() => {
-                        this.members.forEach(m => m.setSuperActionHandler(this))
-                    })
-                } else {
-                    user.recv(new GameError(1002))
-                }
-                break
-            default:
-                this.superActionHandler!.handleAction(user, action)
+    handleChat(user: User, action: Chat) {
+        this.broadcast(new UserChat(user.name, action.message))
+    }
+
+    handleStartGame(user: User, action: StartGame) {
+        if (user === this.host) {
+            this.game = new Game(this.members)
+            this.game.start()
+        } else {
+            user.recv(new GameError(1002))
         }
-    }
-
-    setSuperActionHandler(handler: ActionHandling): void {
-        this.superActionHandler = handler
-    }
-
-    unsetSuperActionHandler(): void {
-        this.superActionHandler = null
     }
 }
