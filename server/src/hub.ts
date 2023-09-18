@@ -1,5 +1,5 @@
-import { Action, ChangeDrift, Chat, CreateRoom, DrawCard, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
-import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreated, UserDeleted } from "@shared/event";
+import { ChangeDrift, Chat, CreateRoom, DrawCard, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
+import { GameError, GameEvent, UserCreated, UserDeleted } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
 import { User } from "@/user";
@@ -13,13 +13,15 @@ export class Hub extends EventEmitter implements Broadcasting {
 
     constructor() {
         super()
-        this.on(CreateRoom.name, (user: User, action: CreateRoom) => this.handleCreateRoom(user, action))
-        this.on(JoinRoom.name, (user: User, action: JoinRoom) => this.handleJoinRoom(user, action))
-        this.on(LeaveRoom.name, (user: User, action: LeaveRoom) => this.handleLeaveRoom(user, action))
+        this.on(CreateRoom.name, this.handleCreateRoom)
+        this.on(JoinRoom.name, this.handleJoinRoom)
+        this.on(LeaveRoom.name, this.handleLeaveRoom)
+        // Q. What if user.room or user.room.game is undefined in the code below?
+        // A. Just let it throw error.
         this.on(Chat.name, (user: User, action: Chat) => user.room.handleChat(user, action))
         this.on(StartGame.name, (user: User, action: StartGame) => user.room.handleStartGame(user, action))
-        this.on(Shoot.name, (user: User, action: Shoot) => user.room.game.emitShoot(user, action))
-        this.on(DrawCard.name, (user: User, action: DrawCard) => user.room.game.emitDrawCard(user, action))
+        this.on(Shoot.name, (user: User, action: Shoot) => user.room.game.emitShoot(user, action)) // it's emit, not handle
+        this.on(DrawCard.name, (user: User, action: DrawCard) => user.room.game.emitDrawCard(user, action)) // same
         this.on(PlayCard.name, (user: User, action: PlayCard) => user.room.game.handlePlayCard(user, action))
         this.on(ChangeDrift.name, (user: User, action: ChangeDrift) => user.room.game.handleChangeDrift(user, action))
     }
