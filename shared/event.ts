@@ -2,6 +2,7 @@
  * This file contains all the events that can be sent to the client.
  */
 import { Card, Drift } from "./enums"
+import { RoomCommonInterface, UserCommonInterface } from "./interfaces"
 export type GameEvent = UserCreated | UserDeleted | UserJoinedRoom | UserLeftRoom | UserChat | RoomCreated | RoomDeleted | RoomUpdated | GameError | NewHost | UserShot | UserDead | GameStarted | YourTurn | YouDied | NowTurnOf | NewRound | NewDrift
 
 /**
@@ -11,6 +12,8 @@ export class UserCreated {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new UserCreated(e.name)
 }
 
 /**
@@ -20,6 +23,8 @@ export class UserDeleted {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new UserDeleted(e.name)
 }
 
 /**
@@ -29,6 +34,8 @@ export class UserJoinedRoom {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new UserJoinedRoom(e.name)
 }
 
 /**
@@ -38,6 +45,8 @@ export class UserLeftRoom {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new UserLeftRoom(e.name)
 }
 
 /**
@@ -62,6 +71,15 @@ export class RoomCreated {
         public readonly members: string[],
         public readonly isPrivate: boolean
     ) { }
+
+    static from = (e: RoomCommonInterface<UserCommonInterface>) => new RoomCreated(
+        e.id,
+        e.name,
+        e.host.name,
+        e.maxMembers,
+        e.members.map(m => m.name),
+        e.private,
+    )
 }
 
 /**
@@ -71,6 +89,8 @@ export class RoomDeleted {
     constructor(
         public readonly id: number,
     ) { }
+
+    static from = (e: RoomCommonInterface<UserCommonInterface>) => new RoomDeleted(e.id)
 }
 
 /**
@@ -85,6 +105,15 @@ export class RoomUpdated {
         public readonly members: string[],
         public readonly isPrivate: boolean,
     ) { }
+
+    static from = (e: RoomCommonInterface<UserCommonInterface>) => new RoomUpdated(
+        e.id,
+        e.name,
+        e.host.name,
+        e.maxMembers,
+        e.members.map(m => m.name),
+        e.private,
+    )
 }
 
 /**
@@ -109,6 +138,8 @@ export class NewHost {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new NewHost(e.name)
 }
 
 export class GameStarted { }
@@ -130,6 +161,8 @@ export class UserDead {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new UserDead(e.name)
 }
 
 export class YourTurn { }
@@ -164,6 +197,8 @@ export class UserDrewCard {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (e: UserCommonInterface) => new UserDrewCard(e.name)
 }
 
 export class CardPlayed {

@@ -1,10 +1,11 @@
 import { Action, Chat, StartGame } from "@shared/action"
 import { GameError, GameEvent, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { RoomCommonInterface } from "@shared/interfaces"
 import { Broadcasting } from "@/interfaces"
 import { User } from "@/user"
 import { Game } from "@/game"
 
-export class Room implements Broadcasting {
+export class Room implements Broadcasting, RoomCommonInterface<User> {
     host: User | null = null
     members: User[] = []
     game: Game | null = null
@@ -12,11 +13,11 @@ export class Room implements Broadcasting {
         public readonly id: number,
         public name: string,
         public maxMembers: number,
-        public password: string,
+        public password: string | null,
     ) { }
 
     get private() {
-        return this.password !== '';
+        return this.password !== null;
     }
 
     get empty() {

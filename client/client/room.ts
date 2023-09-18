@@ -1,7 +1,8 @@
 import { RoomCreated, RoomUpdated } from "@shared/event"
+import { RoomCommonInterface } from "@shared/interfaces"
 import { User } from "./user"
 
-export class Room {
+export class Room implements RoomCommonInterface<User> {
     constructor(
         public id: number,
         public name: string,
@@ -9,6 +10,10 @@ export class Room {
         public members: User[],
         public maxMembers: number,
     ) { }
+    
+    get private(): boolean {
+        throw new Error("Method not implemented.")
+    }
 
     static from(e: RoomCreated | RoomUpdated) {
         return new Room(

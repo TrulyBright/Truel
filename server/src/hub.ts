@@ -1,9 +1,8 @@
 import { ChangeDrift, Chat, CreateRoom, DrawCard, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
-import { GameError, GameEvent, UserCreated, UserDeleted } from "@shared/event";
+import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreated, UserDeleted } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
 import { User } from "@/user";
-import { RoomCreatedFactory, RoomDeletedFactory, RoomUpdatedFactory } from "./factory";
 import { EventEmitter } from "node:events";
 
 export class Hub extends EventEmitter implements Broadcasting {
@@ -34,7 +33,7 @@ export class Hub extends EventEmitter implements Broadcasting {
         this.users.push(user)
         this.broadcast(new UserCreated(user.name))
         this.rooms.forEach(room => {
-            user.recv(RoomCreatedFactory(room))
+            user.recv(RoomCreated.from(room))
         })
     }
 
@@ -54,7 +53,7 @@ export class Hub extends EventEmitter implements Broadcasting {
         const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password)
         room.setHost(user)
         this.rooms.set(room.id, room)
-        this.broadcast(RoomCreatedFactory(room))
+        this.broadcast(RoomCreated.from(room))
         this.emit(JoinRoom.name, user, new JoinRoom(room.id, room.password))
     }
 
@@ -67,7 +66,7 @@ export class Hub extends EventEmitter implements Broadcasting {
         } else {
             room.addMember(user)
             user.joinRoom(room)
-            this.broadcast(RoomUpdatedFactory(room))
+            this.broadcast(RoomUpdated.from(room))
         }
     }
 
@@ -79,7 +78,7 @@ export class Hub extends EventEmitter implements Broadcasting {
             if (left.empty) {
                 this.deleteRoom(left)
             } else {
-                this.broadcast(RoomUpdatedFactory(left))
+                this.broadcast(RoomUpdated.from(left))
             }
         } else {
             user.recv(new GameError(1001))
@@ -88,6 +87,6 @@ export class Hub extends EventEmitter implements Broadcasting {
 
     deleteRoom(room: Room) {
         this.rooms.delete(room.id)
-        this.broadcast(RoomDeletedFactory(room))
+        this.broadcast(RoomDeleted.from(room))
     }
 }

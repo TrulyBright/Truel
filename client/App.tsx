@@ -12,10 +12,10 @@ const App = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState(Array<Room>());
   socket.addEventListener(RoomCreated, (e: RoomCreated) => {
-    setRooms([...rooms, new Room(e)]);
+    setRooms([...rooms, Room.from(e)]);
   });
   socket.addEventListener(RoomUpdated, (e: RoomUpdated) => {
-    setRooms(rooms.map((room) => (room.id === e.id ? new Room(e) : room)));
+    setRooms(rooms.map((room) => (room.id === e.id ? Room.from(e) : room)));
   });
   socket.addEventListener(RoomDeleted, (e: RoomDeleted) => {
     setRooms(rooms.filter((room) => room.id !== e.id));
