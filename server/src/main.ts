@@ -20,7 +20,10 @@ wss.on("connection", (ws) => {
     ws.on("message", (message) => {
         const data = JSON.parse(message.toString())
         const constructor = actionConstructors[data.type]
-        if (!constructor) console.error("Unknown action: " + data)
+        if (!constructor) {
+            console.error("Unknown action: " + data)
+            return
+        }
         const action = new constructor()
         Object.assign(action, data.args)
         hub.emit(action.constructor.name, user, action)
