@@ -45,7 +45,9 @@ export class ChangeDrift {
     ) { }
 }
 
-export const actionConstructors = {
+export type ActionConstructor = new (...args: any[]) => Action
+
+export const actionConstructors: { [key: string]: ActionConstructor } = {
     CreateRoom,
     JoinRoom,
     LeaveRoom,
