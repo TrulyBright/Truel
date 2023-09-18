@@ -45,7 +45,7 @@ export class ChangeDrift {
     ) { }
 }
 
-export const actionConstructors: { [K in Action["constructor"]["name"]]: new (...args: any[]) => Action } = {
+export const actionConstructors = {
     CreateRoom,
     JoinRoom,
     LeaveRoom,
