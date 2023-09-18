@@ -2,17 +2,21 @@ import { RoomCreated, RoomUpdated } from "@shared/event"
 import { User } from "./user"
 
 export class Room {
-    id: number
-    name: string
-    host: User
-    members: User[]
-    maxMembers: number
+    constructor(
+        public id: number,
+        public name: string,
+        public host: User,
+        public members: User[],
+        public maxMembers: number,
+    ) { }
 
-    constructor(e: RoomCreated | RoomUpdated) {
-        this.id = e.id
-        this.name = e.name
-        this.host = new User(e.host)
-        this.maxMembers = e.maxMembers
-        this.members = e.members.map(m => new User(m))
+    static from(e: RoomCreated | RoomUpdated) {
+        return new Room(
+            e.id,
+            e.name,
+            new User(e.host),
+            e.members.map(m => new User(m)),
+            e.maxMembers,
+        )
     }
 }
