@@ -32,7 +32,7 @@ test("Scenario #1", () => {
     const maxMembers = 2
     const password = "password"
     // 2. The user creates a room.
-    user1.perform(new CreateRoom(name, maxMembers, password))
+    hub.emit(CreateRoom.name, user1, new CreateRoom(name, maxMembers, password))
     const room = user1.room
     expect(hub.rooms.has(room.id)).toBe(true)
     expect(room).not.toBeNull()
@@ -49,7 +49,7 @@ test("Scenario #1", () => {
     expect(roomCreated.maxMembers).toBe(room.maxMembers)
     expect(roomCreated.name).toBe(room.name)
     // 3. Another user joins the room.
-    user2.perform(new JoinRoom(room.id, room.password))
+    hub.emit(JoinRoom.name, user2, new JoinRoom(room.id, room.password))
     expect(room.host).toBe(user1)
     expect(room.members).toContain(user1)
     expect(room.members).toContain(user2)
@@ -61,13 +61,13 @@ test("Scenario #1", () => {
     // 4. The third user fails to join the room.
     const user3WhoFailsToJoin = new User("user3")
     hub.addUser(user3WhoFailsToJoin)
-    user3WhoFailsToJoin.perform(new JoinRoom(room.id, null))
+    hub.emit(JoinRoom.name, user3WhoFailsToJoin, new JoinRoom(room.id, null))
     expect(room.members).not.toContain(user3WhoFailsToJoin)
     const errorToUser3 = user3WhoFailsToJoin.last50Events.findItemOf(GameError) as GameError
     expect(errorToUser3.code).toBe(1003)
     // 5. Users in the room chat, which the outsiders cannot see.
     const message = "hello"
-    user1.perform(new Chat(message))
+    hub.emit(Chat.name, user1, new Chat(message))
     hub.users.filter(user => user.room !== room).forEach(user => {
         const chatReceived = () => user.last50Events.findItemOf(UserChat) as UserChat
         expect(chatReceived).toThrow()
@@ -78,7 +78,7 @@ test("Scenario #1", () => {
         expect(user1Chat.message).toBe(message)
     })
     // 6. The first user (host) leaves the room.
-    user1.perform(new LeaveRoom())
+    hub.emit(LeaveRoom.name, user1, new LeaveRoom())
     expect(user1.room).toBeNull()
     expect(room.members).not.toContain(user1)
     const user1LeftRoom = user2.last50Events.findItemOf(UserLeftRoom) as UserLeftRoom
@@ -97,7 +97,7 @@ test("Scenario #1", () => {
         expect(roomUpdated.isPrivate).toBe(room.private)
     })
     // 9. The second user leaves the room.
-    user2.perform(new LeaveRoom())
+    hub.emit(LeaveRoom.name, user2, new LeaveRoom())
     expect(user2.room).toBeNull()
     expect(room.members).not.toContain(user1)
     expect(room.members).not.toContain(user2)
