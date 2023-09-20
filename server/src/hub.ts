@@ -1,4 +1,4 @@
-import { ChangeDrift, Chat, CreateRoom, DrawCard, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
+import { ChangeDrift, Chat, CreateRoom, DrawCard, InGameAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
 import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreated, UserDeleted } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
@@ -19,10 +19,12 @@ export class Hub extends EventEmitter implements Broadcasting {
         // A. Just let it throw error.
         this.on(Chat.name, (user: User, action: Chat) => user.room.handleChat(user, action))
         this.on(StartGame.name, (user: User, action: StartGame) => user.room.handleStartGame(user, action))
-        this.on(Shoot.name, (user: User, action: Shoot) => user.room.game.emitShoot(user, action)) // it's emit, not handle
-        this.on(DrawCard.name, (user: User, action: DrawCard) => user.room.game.emitDrawCard(user, action)) // same
-        this.on(PlayCard.name, (user: User, action: PlayCard) => user.room.game.handlePlayCard(user, action))
-        this.on(ChangeDrift.name, (user: User, action: ChangeDrift) => user.room.game.handleChangeDrift(user, action))
+        const inGameActions = [Shoot, DrawCard, PlayCard, ChangeDrift]
+        inGameActions.forEach(action => {
+            this.on(action.name, (user: User, action: InGameAction) => {
+                user.room.game.emit(action.constructor.name, user, action)
+            })
+        })
     }
 
     broadcast(event: GameEvent) {

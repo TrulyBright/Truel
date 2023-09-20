@@ -15,6 +15,10 @@ export class Game extends EventEmitter implements Broadcasting {
         public readonly broadcaster: Broadcasting
     ) {
         super()
+        this.on(Shoot.name, this.emitShoot)
+        this.on(DrawCard.name, this.emitDrawCard)
+        this.on(PlayCard.name, this.handlePlayCard)
+        this.on(ChangeDrift.name, this.handleChangeDrift)
     }
 
     broadcast(event: GameEvent): void {

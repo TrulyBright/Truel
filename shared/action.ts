@@ -1,6 +1,7 @@
 import { Drift } from "./enums"
 
-export type Action = CreateRoom | JoinRoom | LeaveRoom | Chat | StartGame | Shoot | DrawCard | PlayCard
+export type Action = CreateRoom | JoinRoom | LeaveRoom | Chat | StartGame | Shoot | DrawCard | PlayCard | ChangeDrift
+export type InGameAction = Shoot | DrawCard | PlayCard | ChangeDrift
 
 export class CreateRoom {
     constructor(
