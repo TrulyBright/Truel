@@ -17,8 +17,5 @@
         "inlineSourceMap": true,
         "moduleResolution": "NodeNext",
         "esModuleInterop": true
-    },
-    "exclude": [
-        "__tests__"
-    ]
+    }
 }

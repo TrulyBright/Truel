@@ -56,8 +56,10 @@ export class Room implements Broadcasting, RoomCommonInterface<User> {
 
     handleStartGame(user: User, action: StartGame) {
         if (user === this.host) {
-            this.game = new Game(this.members)
-            this.game.start()
+            this.game = new Game(this.members, this)
+            this.game.task = this.game.start().then(() => {
+                this.game = null
+            })
         } else {
             user.recv(new GameError(1002))
         }

@@ -8,15 +8,17 @@ import { Card } from "@shared/enums"
 export class Game extends EventEmitter implements Broadcasting {
     static turnTimeLimit = 10000 // ms
     static readonly rounds = 4
+    task: Promise<void>
     currentPlayer: User
     constructor(
         public players: User[],
+        public readonly broadcaster: Broadcasting
     ) {
         super()
     }
 
     broadcast(event: GameEvent): void {
-        this.players.forEach(player => player.recv(event))
+        this.broadcaster.broadcast(event)
     }
 
     async start() {
@@ -24,20 +26,21 @@ export class Game extends EventEmitter implements Broadcasting {
         for (let i = 1; i <= Game.rounds; i++) await this.playRound(i)
     }
 
-    async playRound(roundNo: number) {
+    private async playRound(roundNo: number) {
         console.log(`Round ${roundNo} starts`)
         this.broadcast(new NewRound(roundNo))
         this.players.forEach(p => p.resetForNewRound())
-        this.currentPlayer = this.players[0]
+        this.currentPlayer = this.survivors[0]
         while (this.survivors.length > 1) {
-            console.log(`Now turn of ${this.currentPlayer.name}`)
-            this.broadcast(new NowTurnOf(this.currentPlayer.name))
-            this.currentPlayer.recv(new YourTurn())
             await this.playTurn()
+            this.currentPlayer = this.survivors[(this.survivors.indexOf(this.currentPlayer) + 1) % this.survivors.length]
         }
     }
 
-    async playTurn() {
+    private async playTurn() {
+        console.log(`Now turn of ${this.currentPlayer.name}`)
+        this.broadcast(new NowTurnOf(this.currentPlayer.name))
+        this.currentPlayer.recv(new YourTurn())
         const performed: Shoot | DrawCard = await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 // On timeout, shoot at a random player
@@ -53,6 +56,8 @@ export class Game extends EventEmitter implements Broadcasting {
         })
         if (performed instanceof Shoot) this.handleShoot(this.currentPlayer, performed)
         else this.handleDrawCard(this.currentPlayer, performed)
+        this.removeAllListeners(Shoot.name)
+            .removeAllListeners(DrawCard.name)
     }
 
     emitShoot(user: User, action: Shoot) {
@@ -69,7 +74,7 @@ export class Game extends EventEmitter implements Broadcasting {
         this.emit(DrawCard.name, user, action)
     }
 
-    handleShoot(user: User, action: Shoot) {
+    private handleShoot(user: User, action: Shoot) {
         console.log(`${user.name} shoots at ${action.target}`)
         const target = this.players.find(p => p.name === action.target)
         this.broadcast(new UserShot(user.name, target.name))
@@ -85,7 +90,7 @@ export class Game extends EventEmitter implements Broadcasting {
         }
     }
 
-    handleDrawCard(user: User, action: DrawCard) {
+    private handleDrawCard(user: User, action: DrawCard) {
         console.log(`${user.name} draws a card`)
         // Get a random card
         const pool = Object.keys(Card).map(k => Card[k as keyof typeof Card])

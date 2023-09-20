@@ -14,14 +14,14 @@ export class Socket {
         }))
     }
 
-    public static get instance(): Socket {
+    static get instance(): Socket {
         if (!Socket._instance) {
             Socket._instance = new Socket()
         }
         return Socket._instance
     }
 
-    public static async waitForConnectionOpen(): Promise<void> {
+    static async waitForConnectionOpen(): Promise<void> {
         return new Promise((resolve, reject) => {
             const socket = Socket.instance.socket
             if (socket.readyState === WebSocket.OPEN) {
@@ -33,7 +33,7 @@ export class Socket {
         })
     }
 
-    public perform(action: Action) {
+    perform(action: Action) {
         const data = JSON.stringify({
             type: action.constructor.name,
             args: action
@@ -42,7 +42,7 @@ export class Socket {
         this.socket.send(data)
     }
 
-    public addEventListener<T extends GameEvent>(event: Function, callback: (event: T) => void) {
+    addEventListener<T extends GameEvent>(event: Function, callback: (event: T) => void) {
         this.socket.addEventListener("message", (msg) => {
             const data = JSON.parse(msg.data.toString())
             if (data.type === event.name) {

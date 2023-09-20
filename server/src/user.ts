@@ -1,13 +1,11 @@
 import { EventEmitter } from "node:events"
-import { Action, ActionConstructor, DrawCard, Shoot } from "@shared/action"
-import { GameError, GameEvent, YouDied } from "@shared/event"
+import { GameEvent } from "@shared/event"
 import { UserCommonInterface } from "@shared/interfaces"
 import { Queue } from "@shared/utils"
 import { Card, Drift } from "@shared/enums"
 import { Room } from "@/room"
 
 export class User extends EventEmitter implements UserCommonInterface {
-    actionHandlers: Map<ActionConstructor, Function> = new Map()
     room: Room | null = null
     readonly last50Events = new Queue<GameEvent>()
     private readonly eventRecorder = (e: GameEvent) => {
@@ -58,7 +56,7 @@ export class User extends EventEmitter implements UserCommonInterface {
         this.alive = this.cash > 0
         this.card = null
         this.drift = Drift.Hold
-        this.probability = Math.random()
+        this.probability = 1 // testing purpose
         // reset buff
         this.buff = {
             [Card.Robbery]: false,
