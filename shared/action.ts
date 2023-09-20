@@ -1,4 +1,5 @@
 import { Drift } from "./enums"
+import { UserCommonInterface } from "./interfaces"
 
 export type Action = CreateRoom | JoinRoom | LeaveRoom | Chat | StartGame | Shoot | DrawCard | PlayCard | ChangeDrift
 export type InGameAction = Shoot | DrawCard | PlayCard | ChangeDrift
@@ -34,6 +35,10 @@ export class Shoot {
     constructor(
         public readonly target: string,
     ) { }
+
+    static from(user: UserCommonInterface) {
+        return new Shoot(user.name)
+    }
 }
 
 export class DrawCard { }
@@ -57,4 +62,5 @@ export const actionConstructors: { [key: string]: ActionConstructor } = {
     Shoot,
     DrawCard,
     PlayCard,
+    ChangeDrift
 }

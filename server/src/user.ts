@@ -36,6 +36,7 @@ export class User extends EventEmitter implements UserCommonInterface {
 
     recv(event: GameEvent) {
         this.emit("GameEvent", event)
+        this.emit(event.constructor.name, event)
     }
 
     joinRoom(room: Room) {
@@ -56,7 +57,7 @@ export class User extends EventEmitter implements UserCommonInterface {
         this.alive = this.cash > 0
         this.card = null
         this.drift = Drift.Hold
-        this.probability = 1 // testing purpose
+        this.probability = Math.random()
         // reset buff
         this.buff = {
             [Card.Robbery]: false,

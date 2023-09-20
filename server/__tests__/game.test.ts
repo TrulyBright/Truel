@@ -2,12 +2,18 @@ import { Game } from "@/game"
 import { Hub } from "@/hub"
 import { User } from "@/user"
 import { CreateRoom, DrawCard, JoinRoom, PlayCard, Shoot, StartGame } from "@shared/action"
-import { GameEvent, NowTurnOf, UserDead, UserShot, YouDied, YourTurn } from "@shared/event"
+import { CardPlayed, GameEvent, NowTurnOf, UserDead, UserShot, YouDied, YourTurn } from "@shared/event"
 
 test("Actual game", async () => {
+    const maxMembers = 8
+    expect.assertions(
+        (maxMembers - 1) // number of Shoot
+        * (maxMembers * 5 + 6) // number of UserShot, UserDead, YouDied
+        * 3 // number of rounds
+        + 1 // expect(room.game).toBeNull()
+    )
     Game.turnTimeLimit = 1 // speed up the game
     const hub = new Hub()
-    const maxMembers = 3
     const users = [...Array(maxMembers).keys()].map(i => new User(`user${i}`))
     const host = users[0]
     users.forEach(user => hub.addUser(user))
@@ -17,29 +23,30 @@ test("Actual game", async () => {
         hub.emit(JoinRoom.name, user, new JoinRoom(room.id, room.password))
     })
     users.forEach(user => {
-        user.on("GameEvent", (event: GameEvent) => {
-            if (event instanceof YourTurn) {
-                room.game.players.forEach(p => {
-                    const nowTurnOf = p.last50Events.findItemOf(NowTurnOf) as NowTurnOf
-                    expect(nowTurnOf.name).toBe(room.game.currentPlayer.name)
-                })
-                room.game.once(Shoot.name, (shooting: User, action: Shoot) => {
-                    room.game.players.forEach(p => {
-                        const userShot = p.last50Events.findItemOf(UserShot) as UserShot
-                        expect(userShot.shooting).toBe(shooting.name)
-                        expect(userShot.target).toBe(action.target)
-                        const target = room.game.players.find(p => p.name === action.target)
-                        if (!target.alive) {
-                            const userDead = p.last50Events.findItemOf(UserDead) as UserDead
-                            expect(userDead.name).toBe(action.target)
-                            if (p === target) {
-                                const youDied = p.last50Events.findItemOf(YouDied) as YouDied
-                                expect(youDied).toBeTruthy()
-                            }
+        user.on(NowTurnOf.name, (event: NowTurnOf) => {
+            expect(event.name).toBe(room.game.currentPlayer.name)
+        })
+        // TODO: on CardPlayed, etc.
+        user.on(YourTurn.name, (event: YourTurn) => {
+            expect(room.game.currentPlayer).toBe(user)
+            room.game.turnActionListener.once(Shoot.name, (shooting: User, action: Shoot) => {
+                users.forEach(u => {
+                    const userShot = u.last50Events.findItemOf(UserShot) as UserShot
+                    expect(userShot.shooting).toBe(shooting.name)
+                    expect(userShot.target).toBe(action.target)
+                    const target = room.game.players.find(p => p.name === action.target)
+                    if (!target.alive) {
+                        const userDead = u.last50Events.findItemOf(UserDead) as UserDead
+                        expect(userDead.name).toBe(action.target)
+                        if (u === target) {
+                            const youDied = u.last50Events.findItemOf(YouDied) as YouDied
+                            expect(youDied).toBeTruthy()
                         }
-                    })
+                    }
                 })
-            }
+            })
+            user.probability = 1 // testing purpose
+            hub.emit(Shoot.name, user, Shoot.from(room.game.survivors.filter(p => p !== user)[0]))
         })
     })
     hub.emit(StartGame.name, host, new StartGame())
