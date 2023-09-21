@@ -58,11 +58,11 @@ export class Game extends EventEmitter implements Broadcasting {
                 resolve()
             }
             this.turnActionListener
-            .prependOnceListener(Shoot.name, (user: User, action: Shoot) => {
+            .once(Shoot.name, (user: User, action: Shoot) => {
                 this.handleShoot(user, action)
                 finish()
             })
-            .prependOnceListener(DrawCard.name, (user: User, action: DrawCard) => {
+            .once(DrawCard.name, (user: User, action: DrawCard) => {
                 this.handleDrawCard(user, action)
                 finish()
             })
@@ -73,7 +73,7 @@ export class Game extends EventEmitter implements Broadcasting {
         .removeAllListeners(DrawCard.name)
     }
 
-    emitShoot(user: User, action: Shoot) {
+    private emitShoot(user: User, action: Shoot) {
         if (this.currentPlayer !== user) return
         if (!this.survivors.find(p => p.name === action.target)) {
             user.recv(new GameError(1004))
@@ -82,7 +82,7 @@ export class Game extends EventEmitter implements Broadcasting {
         this.turnActionListener.emit(Shoot.name, user, action)
     }
 
-    emitDrawCard(user: User, action: DrawCard) {
+    private emitDrawCard(user: User, action: DrawCard) {
         if (this.currentPlayer !== user) return
         this.turnActionListener.emit(DrawCard.name, user, action)
     }
@@ -113,7 +113,7 @@ export class Game extends EventEmitter implements Broadcasting {
         this.broadcast(new UserDrewCard(user.name))
     }
 
-    handlePlayCard(user: User, action: PlayCard) {
+    private handlePlayCard(user: User, action: PlayCard) {
         if (this.currentPlayer !== user) return
         console.log(`${user.name} plays ${user.card}`)
         switch (user.card) {
@@ -135,7 +135,7 @@ export class Game extends EventEmitter implements Broadcasting {
         this.broadcast(new CardPlayed(user.name, user.card))
     }
 
-    handleChangeDrift(user: User, action: ChangeDrift) {
+    private handleChangeDrift(user: User, action: ChangeDrift) {
         if (!this.players.includes(user)) return
         user.drift = action.drift
         user.recv(new NewDrift(user.drift))
