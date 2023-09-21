@@ -7,10 +7,13 @@ import { CardPlayed, GameEvent, NowTurnOf, UserDead, UserShot, YouDied, YourTurn
 test("Actual game", async () => {
     const maxMembers = 8
     expect.assertions(
-        (maxMembers - 1) // number of Shoot
-        * (maxMembers * 5 + 6) // number of UserShot, UserDead, YouDied
-        * 3 // number of rounds
-        + 1 // expect(room.game).toBeNull()
+        (
+            (maxMembers - 1) * maxMembers // expect NowTurnOf
+            + (maxMembers - 1) // expect(room.game.currentPlayer).toBe(user)
+            + (maxMembers - 1) * (maxMembers * 3 + 1) // expect userShot.shooting, userShot,target, userDead
+        )
+        * Game.rounds
+        + 1 // expect(room.game).toBe(null)
     )
     Game.turnTimeLimit = 1 // speed up the game
     const hub = new Hub()
