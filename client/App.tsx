@@ -2,11 +2,11 @@ import { View, ActivityIndicator, StyleSheet } from "react-native";
 import CreateRoomModal from "./components/CreateRoomModal";
 import { useState } from "react";
 import { Socket } from "./client/socket";
-import { RoomCreated, RoomUpdated, RoomDeleted, UserCreated, UserDeleted } from "@shared/event";
+import { RoomCreated, RoomUpdated, RoomDeleted, UserCreated, UserDeleted, UserList, RoomList } from "@shared/event";
 import { Room } from "./client/room";
 import { User } from "./client/user";
 import RoomEntry from "./components/RoomEntry";
-import { GetRooms } from "@shared/action";
+import { GetRooms, GetUsers } from "@shared/action";
 
 const App = () => {
   const socket = Socket.instance;
@@ -14,6 +14,9 @@ const App = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState(Array<Room>());
   const [users, setUsers] = useState(Array<User>());
+  socket.addEventListener(RoomList, (e: RoomList) => {
+    setRooms(e.rooms.map((room) => Room.from(room)))
+  })
   socket.addEventListener(RoomCreated, (e: RoomCreated) => {
     setRooms([...rooms, Room.from(e)]);
   });
@@ -23,6 +26,9 @@ const App = () => {
   socket.addEventListener(RoomDeleted, (e: RoomDeleted) => {
     setRooms(rooms.filter((room) => room.id !== e.id));
   });
+  socket.addEventListener(UserList, (e: UserList) => {
+    setUsers(e.users.map((user) => User.from(user)))
+  })
   socket.addEventListener(UserCreated, (e: UserCreated) => {
     setUsers([...users, User.from(e)]);
   });
@@ -30,6 +36,7 @@ const App = () => {
     setUsers(users.filter((user) => user.name !== e.name))
   })
   socket.onOpen(() => {
+    socket.perform(new GetUsers())
     socket.perform(new GetRooms())
   })
   return (

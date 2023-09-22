@@ -116,6 +116,22 @@ export class RoomUpdated {
     )
 }
 
+export class RoomList {
+    constructor(
+        public readonly rooms: RoomCreated[],
+    ) { }
+
+    static from = (rooms: RoomCommonInterface<UserCommonInterface>[]) => new RoomList(rooms.map(RoomCreated.from))
+}
+
+export class UserList {
+    constructor(
+        public readonly users: UserCreated[],
+    ) { }
+
+    static from = (users: UserCommonInterface[]) => new UserList(users.map(UserCreated.from))
+}
+
 /**
  * Sent to the user when an error occurs.
  * 1000: Room not found

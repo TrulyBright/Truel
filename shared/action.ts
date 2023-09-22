@@ -23,6 +23,8 @@ export class LeaveRoom { }
 
 export class GetRooms { }
 
+export class GetUsers { }
+
 export class Chat {
     constructor(
         public readonly message: string
@@ -57,6 +59,7 @@ export type ActionConstructor = new (...args: any[]) => Action
 
 export const actionConstructors: { [key: string]: ActionConstructor } = {
     GetRooms,
+    GetUsers,
     CreateRoom,
     JoinRoom,
     LeaveRoom,
