@@ -1,4 +1,4 @@
-import { ChangeDrift, Chat, CreateRoom, DrawCard, InGameAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
+import { ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, InGameAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
 import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomUpdated, UserCreated, UserDeleted } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import { Room } from "@/room";
@@ -15,6 +15,7 @@ export class Hub extends EventEmitter implements Broadcasting {
         this.on(CreateRoom.name, this.handleCreateRoom)
         this.on(JoinRoom.name, this.handleJoinRoom)
         this.on(LeaveRoom.name, this.handleLeaveRoom)
+        this.on(GetRooms.name, this.handleGetRooms)
         // Q. What if user.room or user.room.game is undefined in the code below?
         // A. Just let it throw error.
         this.on(Chat.name, (user: User, action: Chat) => user.room.handleChat(user, action))
@@ -34,9 +35,6 @@ export class Hub extends EventEmitter implements Broadcasting {
     addUser(user: User) {
         this.users.push(user)
         this.broadcast(new UserCreated(user.name))
-        this.rooms.forEach(room => {
-            user.recv(RoomCreated.from(room))
-        })
     }
 
     removeUser(user: User) {
@@ -85,6 +83,12 @@ export class Hub extends EventEmitter implements Broadcasting {
         } else {
             user.recv(new GameError(1001))
         }
+    }
+
+    handleGetRooms(user: User, action: GetRooms) {
+        this.rooms.forEach(room => {
+            user.recv(RoomCreated.from(room))
+        })
     }
 
     deleteRoom(room: Room) {

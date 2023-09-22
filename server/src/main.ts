@@ -22,7 +22,7 @@ wss.on("connection", (ws) => {
         const data = JSON.parse(message.toString())
         const constructor = actionConstructors[data.type]
         if (!constructor) {
-            console.error("Unknown action: " + data)
+            console.error("Unknown action: " + JSON.stringify(data))
             return
         }
         const action = new constructor()

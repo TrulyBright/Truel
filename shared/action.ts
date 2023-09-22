@@ -1,7 +1,7 @@
 import { Drift } from "./enums"
 import { UserCommonInterface } from "./interfaces"
 
-export type Action = CreateRoom | JoinRoom | LeaveRoom | Chat | StartGame | Shoot | DrawCard | PlayCard | ChangeDrift
+export type Action = CreateRoom | JoinRoom | LeaveRoom | GetRooms | Chat | StartGame | Shoot | DrawCard | PlayCard | ChangeDrift
 export type InGameAction = Shoot | DrawCard | PlayCard | ChangeDrift
 
 export class CreateRoom {
@@ -20,6 +20,8 @@ export class JoinRoom {
 }
 
 export class LeaveRoom { }
+
+export class GetRooms { }
 
 export class Chat {
     constructor(
@@ -54,6 +56,7 @@ export class ChangeDrift {
 export type ActionConstructor = new (...args: any[]) => Action
 
 export const actionConstructors: { [key: string]: ActionConstructor } = {
+    GetRooms,
     CreateRoom,
     JoinRoom,
     LeaveRoom,

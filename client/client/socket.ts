@@ -50,4 +50,16 @@ export class Socket {
             }
         })
     }
+
+    onOpen(callback: () => void) {
+        this.socket.addEventListener("open", callback)
+    }
+
+    onClose(callback: () => void) {
+        this.socket.addEventListener("close", callback)
+    }
+
+    onError(callback: () => void) {
+        this.socket.addEventListener("error", callback)
+    }
 }
