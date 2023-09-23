@@ -1,6 +1,6 @@
-import { Hub } from "@/hub"
-import { User } from "@/user"
-import { Room } from "@/room"
+import Hub from "@/hub"
+import Room from "@/room"
+import User from "@/user"
 import { Chat, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action"
 import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, RoomUpdated, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 

@@ -2,10 +2,10 @@ import { Action, Chat, StartGame } from "@shared/action"
 import { GameError, GameEvent, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
 import { Broadcasting } from "@/interfaces"
-import { User } from "@/user"
-import { Game } from "@/game"
+import User from "@/user"
+import Game from "@/game"
 
-export class Room implements Broadcasting, RoomCommonInterface<User> {
+export default class Room implements Broadcasting, RoomCommonInterface<User> {
     host: User | null = null
     members: User[] = []
     game: Game | null = null

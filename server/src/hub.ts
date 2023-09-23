@@ -1,11 +1,11 @@
 import { ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InGameAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
 import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
-import { Room } from "@/room";
-import { User } from "@/user";
+import Room from "@/room";
+import User from "@/user";
 import { EventEmitter } from "node:events";
 
-export class Hub extends EventEmitter implements Broadcasting {
+export default class Hub extends EventEmitter implements Broadcasting {
     users: User[] = []
     rooms: Map<number, Room> = new Map()
     roomIdCounter = 0

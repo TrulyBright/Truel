@@ -8,6 +8,8 @@
     },
     "dependencies": {
         "@types/ws": "^8.5.5",
+        "class-transformer": "^0.5.1",
+        "reflect-metadata": "^0.1.13",
         "ws": "^8.13.0"
     },
     "devDependencies": {

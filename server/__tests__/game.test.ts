@@ -1,6 +1,6 @@
-import { Game } from "@/game"
-import { Hub } from "@/hub"
-import { User } from "@/user"
+import Game from "@/game"
+import Hub from "@/hub"
+import User from "@/user"
 import { CreateRoom, DrawCard, JoinRoom, PlayCard, Shoot, StartGame } from "@shared/action"
 import { CardPlayed, GameEvent, NowTurnOf, UserDead, UserShot, YouDied, YourTurn } from "@shared/event"
 

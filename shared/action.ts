@@ -27,10 +27,11 @@ export class GetUsers { }
 
 export class Chat {
     static readonly maxLength = 100
+    static limiter = (message: string) => message.slice(0, Chat.maxLength).replace(/\n/g, ' ').trim()
     constructor(
         public readonly message: string
     ) {
-        this.message = message.slice(0, Chat.maxLength).replace(/\n/g, ' ').trim()
+        this.message = Chat.limiter(message)
     }
 }
 

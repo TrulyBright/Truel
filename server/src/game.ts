@@ -1,11 +1,11 @@
-import { User } from "@/user"
+import User from "@/user"
 import { EventEmitter } from "node:events"
 import { Broadcasting } from "@/interfaces"
 import { BulletProofBroken, CardPlayed, GameError, GameEvent, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
 import { Action, ChangeDrift, DrawCard, PlayCard, Shoot, actionConstructors } from "@shared/action"
 import { Card } from "@shared/enums"
 
-export class Game extends EventEmitter implements Broadcasting {
+export default class Game extends EventEmitter implements Broadcasting {
     static turnTimeLimit = 10000 // ms
     static readonly rounds = 4
     task: Promise<void>
