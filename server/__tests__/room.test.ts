@@ -66,7 +66,7 @@ test("Scenario #1", () => {
     const errorToUser3 = user3WhoFailsToJoin.last50Events.findItemOf(GameError) as GameError
     expect(errorToUser3.code).toBe(1003)
     // 5. Users in the room chat, which the outsiders cannot see.
-    const message = "hello"
+    const message = "hello".repeat(Chat.maxLength)
     hub.emit(Chat.name, user1, new Chat(message))
     hub.users.filter(user => user.room !== room).forEach(user => {
         const chatReceived = () => user.last50Events.findItemOf(UserChat) as UserChat
@@ -75,7 +75,7 @@ test("Scenario #1", () => {
     room.members.forEach(user => {
         const user1Chat = user.last50Events.findItemOf(UserChat) as UserChat
         expect(user1Chat.name).toBe(user1.name)
-        expect(user1Chat.message).toBe(message)
+        expect(user1Chat.message).toBe(message.slice(0, Chat.maxLength))
     })
     // 6. The first user (host) leaves the room.
     hub.emit(LeaveRoom.name, user1, new LeaveRoom())
