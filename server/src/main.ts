@@ -1,7 +1,9 @@
 import WebSocketEndpoint from "@/endpoint"
+import { config } from "dotenv"
+import path from "path"
 
-const port = 8080
+config({ path: path.resolve(__dirname, "../.env") })
 
-const endpoint = new WebSocketEndpoint("0.0.0.0", port)
+const endpoint = new WebSocketEndpoint(process.env.HOSTNAME, Number(process.env.PORT))
 endpoint.start()
 endpoint.addDummyUsers(256)
