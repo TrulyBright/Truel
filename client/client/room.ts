@@ -9,10 +9,11 @@ export class Room implements RoomCommonInterface<User> {
         public host: User,
         public members: User[],
         public maxMembers: number,
+        public isPrivate: boolean,
     ) { }
-    
-    get private(): boolean {
-        throw new Error("Method not implemented.")
+
+    get private() {
+        return this.isPrivate
     }
 
     static from(e: RoomCreated | RoomUpdated) {
@@ -22,6 +23,7 @@ export class Room implements RoomCommonInterface<User> {
             new User(e.host),
             e.members.map(m => new User(m)),
             e.maxMembers,
+            e.isPrivate
         )
     }
 }

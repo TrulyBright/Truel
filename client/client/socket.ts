@@ -1,5 +1,6 @@
 import { Action } from "@shared/action"
-import { GameEvent } from "@shared/event"
+import { Event, EventConstructor } from "@shared/event"
+import { plainToClass, instanceToPlain } from "class-transformer"
 
 /**
  * Socket class, singleton.
@@ -21,7 +22,7 @@ export class Socket {
         return Socket._instance
     }
 
-    static async waitForConnectionOpen(): Promise<void> {
+    waitForConnectionOpen(): Promise<void> {
         return new Promise((resolve, reject) => {
             const socket = Socket.instance.socket
             if (socket.readyState === WebSocket.OPEN) {
@@ -36,17 +37,17 @@ export class Socket {
     perform(action: Action) {
         const data = JSON.stringify({
             type: action.constructor.name,
-            args: action
+            args: instanceToPlain(action)
         })
         console.log("Sending message", data)
         this.socket.send(data)
     }
 
-    addEventListener<T extends GameEvent>(event: Function, callback: (event: T) => void) {
+    addEventListener(event: EventConstructor, callback: (event: Event) => void) {
         this.socket.addEventListener("message", (msg) => {
             const data = JSON.parse(msg.data.toString())
             if (data.type === event.name) {
-                callback(data.args)
+                callback(plainToClass(event, data.args))
             }
         })
     }
