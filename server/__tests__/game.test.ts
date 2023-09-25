@@ -2,7 +2,7 @@ import Game from "@/game"
 import Hub from "@/hub"
 import User from "@/user"
 import { CreateRoom, DrawCard, JoinRoom, PlayCard, Shoot, StartGame } from "@shared/action"
-import { CardPlayed, GameEvent, NowTurnOf, UserDead, UserShot, YouDied, YourTurn } from "@shared/event"
+import { CardPlayed, Event, NowTurnOf, UserDead, UserShot, YouDied, YourTurn } from "@shared/event"
 
 test("Actual game", async () => {
     const maxMembers = 8

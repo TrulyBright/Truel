@@ -1,5 +1,5 @@
 import { Action, Chat, StartGame } from "@shared/action"
-import { GameError, GameEvent, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { GameError, Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
 import { Broadcasting } from "@/interfaces"
 import User from "@/user"
@@ -28,7 +28,7 @@ export default class Room implements Broadcasting, RoomCommonInterface<User> {
         return this.members.length === this.maxMembers
     }
 
-    broadcast(event: GameEvent): void {
+    broadcast(event: Event): void {
         this.members.forEach(user => user.recv(event))
     }
 

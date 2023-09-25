@@ -1,5 +1,5 @@
 import { ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InGameAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
-import { GameError, GameEvent, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList } from "@shared/event";
+import { GameError, Event, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import Room from "@/room";
 import User from "@/user";
@@ -29,7 +29,7 @@ export default class Hub extends EventEmitter implements Broadcasting {
         })
     }
 
-    broadcast(event: GameEvent) {
+    broadcast(event: Event) {
         this.users.forEach(user => user.recv(event))
     }
 

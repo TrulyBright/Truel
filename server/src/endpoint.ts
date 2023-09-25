@@ -1,14 +1,15 @@
 import "reflect-metadata"
-import { plainToClass } from "class-transformer"
+import { instanceToPlain, plainToClass } from "class-transformer"
 import { WebSocketServer } from "ws"
 import Hub from "@/hub"
 import User from "@/user"
-import { actionConstructors } from "@shared/action"
-import { GameEvent } from "@shared/event"
+import { CreateRoom, actionConstructors } from "@shared/action"
+import { Event } from "@shared/event"
 
 export default class WebSocketEndpoint {
     wsServer: WebSocketServer
     hub: Hub = new Hub()
+    userIdCounter = 0
     constructor(
         public readonly host: string,
         public readonly port: number
@@ -20,11 +21,11 @@ export default class WebSocketEndpoint {
     }
     start() {
         this.wsServer.on("connection", (ws) => {
-            const user = new User("test")
-            user.on("GameEvent", (event: GameEvent) => {
+            const user = new User("user" + this.userIdCounter++)
+            user.on("Event", (event: Event) => {
                 const data = JSON.stringify({
                     type: event.constructor.name,
-                    args: event
+                    args: instanceToPlain(event)
                 })
                 ws.send(data)
             })
@@ -53,6 +54,11 @@ export default class WebSocketEndpoint {
             const user = new User("dummy" + i)
             this.hub.addUser(user)
         }
+    }
+    addDummyRooms() {
+        this.hub.users.filter(user => user.name.startsWith("dummy")).forEach((user, i) => {
+            this.hub.emit(CreateRoom.name, user, new CreateRoom("dummyRoom", 8, i % 2 === 0 ? "password": null))
+        })
     }
     get URI() {
         return `ws://${this.host}:${this.port}`

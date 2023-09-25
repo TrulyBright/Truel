@@ -1,31 +1,36 @@
 import { Drift } from "./enums"
 import { UserCommonInterface } from "./interfaces"
 
-export type Action = CreateRoom | JoinRoom | LeaveRoom | GetRooms | Chat | StartGame | Shoot | DrawCard | PlayCard | ChangeDrift
-export type InGameAction = Shoot | DrawCard | PlayCard | ChangeDrift
+export interface Action { }
 
-export class CreateRoom {
+export interface InGameAction extends Action { }
+
+export class CreateRoom implements Action {
+    static readonly titleMaxLength = 10
+    static limiter = (title: string) => title.slice(0, CreateRoom.titleMaxLength).replace(/\n/g, ' ').trim()
     constructor(
         public name: string,
         public maxMembers: number,
         public password: string | null
-    ) { }
+    ) {
+        this.name = CreateRoom.limiter(name)
+    }
 }
 
-export class JoinRoom {
+export class JoinRoom implements Action {
     constructor(
         public roomId: number,
         public password: string
     ) { }
 }
 
-export class LeaveRoom { }
+export class LeaveRoom implements Action { }
 
-export class GetRooms { }
+export class GetRooms implements Action { }
 
-export class GetUsers { }
+export class GetUsers implements Action { }
 
-export class Chat {
+export class Chat implements Action {
     static readonly maxLength = 100
     static limiter = (message: string) => message.slice(0, Chat.maxLength).replace(/\n/g, ' ').trim()
     constructor(
@@ -35,9 +40,9 @@ export class Chat {
     }
 }
 
-export class StartGame { }
+export class StartGame implements Action { }
 
-export class Shoot {
+export class Shoot implements InGameAction {
     constructor(
         public readonly target: string,
     ) { }
@@ -47,11 +52,11 @@ export class Shoot {
     }
 }
 
-export class DrawCard { }
+export class DrawCard implements InGameAction { }
 
-export class PlayCard { }
+export class PlayCard implements InGameAction { }
 
-export class ChangeDrift {
+export class ChangeDrift implements InGameAction {
     constructor(
         public readonly drift: Drift,
     ) { }

@@ -1,7 +1,7 @@
 import User from "@/user"
 import { EventEmitter } from "node:events"
 import { Broadcasting } from "@/interfaces"
-import { BulletProofBroken, CardPlayed, GameError, GameEvent, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
+import { BulletProofBroken, CardPlayed, GameError, Event, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
 import { Action, ChangeDrift, DrawCard, PlayCard, Shoot, actionConstructors } from "@shared/action"
 import { Card } from "@shared/enums"
 
@@ -22,7 +22,7 @@ export default class Game extends EventEmitter implements Broadcasting {
         this.on(ChangeDrift.name, this.handleChangeDrift)
     }
 
-    broadcast(event: GameEvent): void {
+    broadcast(event: Event): void {
         this.broadcaster.broadcast(event)
     }
 

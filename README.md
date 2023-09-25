@@ -1,7 +1,7 @@
 # Truel
 *Truel* is an online multiplayer game where players bet and shoot at each other with varying probability of kill. The last man standing wins all the stakes.
 ## Key point of the code
-*Truel* has two key classes: `Action` and `GameEvent`. `Action` is what `User` can *do* and `GameEvent` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `GameEvent` in `/shared`, in order for that code to work as an *interface*.
+*Truel* has two key classes: `Action` and `Event`. `Action` is what `User` can *do* and `Event` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `Event` in `/shared`, in order for that code to work as an *interface*.
 ### `Action`
 `User` can only *perform* `Action`. To perform an `Action`, the client sends a JSON with the following structure:
 ```JSON
@@ -32,8 +32,8 @@ actionConstructors["CreateRoom"] === CreateRoom.constructor // true
 
 After the `Action` is made, the server sends it to `Hub`, which processes it.
 
-### `GameEvent`
-`GameEvent` is what *happens*. <small>(I wanted to name it `Event` but the name was already reserved by typescript.)</small> Every time something happens, the `Hub` makes a `GameEvent` and sends it to some `User`s, with the following structure:
+### `Event`
+`Event` is what *happens*. Every time something happens, the `Hub` makes a `Event` and sends it to some `User`s, with the following structure:
 ```JSON
 {
     "type": "UserJoinedRoom",

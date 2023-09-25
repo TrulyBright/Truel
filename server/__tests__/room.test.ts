@@ -2,7 +2,7 @@ import Hub from "@/hub"
 import Room from "@/room"
 import User from "@/user"
 import { Chat, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action"
-import { GameError, GameEvent, NewHost, RoomCreated, RoomDeleted, RoomUpdated, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { GameError, Event, NewHost, RoomCreated, RoomDeleted, RoomUpdated, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 
 // Scenario #1: Create, Join, Leave
 // 1. A user joins.

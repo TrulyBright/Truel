@@ -1,5 +1,5 @@
-import { GameEvent } from "@shared/event";
+import { Event } from "@shared/event";
 
 export interface Broadcasting {
-    broadcast(event: GameEvent): void
+    broadcast(event: Event): void
 }

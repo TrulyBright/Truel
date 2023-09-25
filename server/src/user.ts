@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events"
-import { GameEvent } from "@shared/event"
+import { Event } from "@shared/event"
 import { UserCommonInterface } from "@shared/interfaces"
 import { Queue } from "@shared/utils"
 import { Card, Drift } from "@shared/enums"
@@ -7,8 +7,8 @@ import Room from "@/room"
 
 export default class User extends EventEmitter implements UserCommonInterface {
     room: Room | null = null
-    readonly last50Events = new Queue<GameEvent>()
-    private readonly eventRecorder = (e: GameEvent) => {
+    readonly last50Events = new Queue<Event>()
+    private readonly eventRecorder = (e: Event) => {
         this.last50Events.enqueue(e)
         if (this.last50Events.length > 50) this.last50Events.dequeue()
     }
@@ -31,11 +31,11 @@ export default class User extends EventEmitter implements UserCommonInterface {
 
     constructor(public readonly name: string) {
         super()
-        this.on("GameEvent", this.eventRecorder)
+        this.on("Event", this.eventRecorder)
     }
 
-    recv(event: GameEvent) {
-        this.emit("GameEvent", event)
+    recv(event: Event) {
+        this.emit("Event", event)
         this.emit(event.constructor.name, event)
     }
 

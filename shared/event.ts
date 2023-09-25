@@ -3,12 +3,15 @@
  */
 import { Card, Drift } from "./enums"
 import { RoomCommonInterface, UserCommonInterface } from "./interfaces"
-export type GameEvent = UserCreated | UserDeleted | UserJoinedRoom | UserLeftRoom | UserChat | RoomCreated | RoomDeleted | RoomUpdated | GameError | NewHost | UserShot | UserDead | GameStarted | YourTurn | YouDied | NowTurnOf | NewRound | NewDrift
+
+export interface Event { }
+
+export type EventConstructor = new (...args: any[]) => Event
 
 /**
  * Sent to everyone when a user instance is created.
  */
-export class UserCreated {
+export class UserCreated implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -19,7 +22,7 @@ export class UserCreated {
 /**
  * Sent to everyone when a user instance is deleted.
  */
-export class UserDeleted {
+export class UserDeleted implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -30,7 +33,7 @@ export class UserDeleted {
 /**
  * Sent to the members of a room when a user joined that room.
  */
-export class UserJoinedRoom {
+export class UserJoinedRoom implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -41,7 +44,7 @@ export class UserJoinedRoom {
 /**
  * Sent to the members of a room when a user left that room.
  */
-export class UserLeftRoom {
+export class UserLeftRoom implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -52,7 +55,7 @@ export class UserLeftRoom {
 /**
  * Sent to the members of a room when a user sent a chat message.
  */
-export class UserChat {
+export class UserChat implements Event {
     constructor(
         public readonly name: string,
         public readonly message: string,
@@ -62,7 +65,7 @@ export class UserChat {
 /**
  * Sent to everyone in the server when a room instance is created.
  */
-export class RoomCreated {
+export class RoomCreated implements Event {
     constructor(
         public readonly id: number,
         public readonly name: string,
@@ -85,7 +88,7 @@ export class RoomCreated {
 /**
  * Sent to everyone in the server when a room instance is deleted.
  */
-export class RoomDeleted {
+export class RoomDeleted implements Event {
     constructor(
         public readonly id: number,
     ) { }
@@ -96,7 +99,7 @@ export class RoomDeleted {
 /**
  * Sent to everyone in the server when a room instance is updated.
  */
-export class RoomUpdated {
+export class RoomUpdated implements Event {
     constructor(
         public readonly id: number,
         public readonly name: string,
@@ -116,7 +119,7 @@ export class RoomUpdated {
     )
 }
 
-export class RoomList {
+export class RoomList implements Event {
     constructor(
         public readonly rooms: RoomCreated[],
     ) { }
@@ -124,7 +127,7 @@ export class RoomList {
     static from = (rooms: RoomCommonInterface<UserCommonInterface>[]) => new RoomList(rooms.map(RoomCreated.from))
 }
 
-export class UserList {
+export class UserList implements Event {
     constructor(
         public readonly users: UserCreated[],
     ) { }
@@ -141,7 +144,7 @@ export class UserList {
  * 1004: User is not alive
  * 9999: Unknown error
  */
-export class GameError {
+export class GameError implements Event {
     constructor(
         public readonly code: number,
     ) { }
@@ -150,7 +153,7 @@ export class GameError {
 /**
  * Sent to the members of a room when a new host is set.
  */
-export class NewHost {
+export class NewHost implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -158,22 +161,22 @@ export class NewHost {
     static from = (e: UserCommonInterface) => new NewHost(e.name)
 }
 
-export class GameStarted { }
+export class GameStarted implements Event { }
 
-export class NewRound {
+export class NewRound implements Event {
     constructor(
         public readonly roundNo: number
     ) { }
 }
 
-export class UserShot {
+export class UserShot implements Event {
     constructor(
         public readonly shooting: string,
         public readonly target: string,
     ) { }
 }
 
-export class UserDead {
+export class UserDead implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -181,35 +184,35 @@ export class UserDead {
     static from = (e: UserCommonInterface) => new UserDead(e.name)
 }
 
-export class YourTurn { }
+export class YourTurn implements Event { }
 
-export class YouDied { }
+export class YouDied implements Event { }
 
-export class NowTurnOf {
+export class NowTurnOf implements Event {
     constructor(
         public readonly name: string,
     ) { }
 }
 
-export class NewDrift {
+export class NewDrift implements Event {
     constructor(
         public readonly drift: Drift,
     ) { }
 }
 
-export class BulletProofBroken {
+export class BulletProofBroken implements Event {
     constructor(
         public readonly name: string,
     ) { }
 }
 
-export class NewCard {
+export class NewCard implements Event {
     constructor(
         public readonly card: Card
     ) { }
 }
 
-export class UserDrewCard {
+export class UserDrewCard implements Event {
     constructor(
         public readonly name: string,
     ) { }
@@ -217,7 +220,7 @@ export class UserDrewCard {
     static from = (e: UserCommonInterface) => new UserDrewCard(e.name)
 }
 
-export class CardPlayed {
+export class CardPlayed implements Event {
     constructor(
         public readonly name: string,
         public readonly card: Card,
