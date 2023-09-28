@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "ts:check": "tsc --noEmit",
-    "publish:web": "expo export:web"
+    "publish:web": "expo export:web",
+    "build:azure": "expo export:web"
   },
   "dependencies": {
     "@expo/webpack-config": "^19.0.0",
