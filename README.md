@@ -15,10 +15,11 @@
 ```
 Once the JSON arrives, the server parses it and finds the constructor for that `Action`. In this case, it's `JoinRoom.constructor`. With the constructor function found, the server makes an `Action` object with arguments given in the `"args"` field in the JSON above, just like the following:
 ```typescript
+import { plainToClass } from "class-transformer"
 const data = JSON.parse(message.toString())
 const constructor = actionConstructors[data.type]
-const action = new constructor()
-Object.assign(action, data.args)
+const action = plainToClass(constructor, data.args)
+this.hub.emit(action.constructor.name, user, action)
 ```
 where `actionConstructors` is an `Object` that you can find a constructor by its name.
 
