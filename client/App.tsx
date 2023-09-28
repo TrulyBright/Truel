@@ -21,21 +21,21 @@ const App = () => {
           },
           tabBarActiveTintColor: "white",
           tabBarInactiveTintColor: "gray",
-          header: Title
+          header: Title,
         }}>
           <Tab.Screen name="Lobby" component={Lobby} options={{
             tabBarIcon: () => (
-              <AntDesign name="home" color="white"></AntDesign>
+              <AntDesign name="home" size={16} color="white"></AntDesign>
             ),
           }} />
           <Tab.Screen name="How to Play" component={HowToPlayScreen} options={{
             tabBarIcon: () => (
-              <Entypo name="help" color="white"></Entypo>
+              <Entypo name="help" size={16} color="white"></Entypo>
             ),
           }} />
           <Tab.Screen name="Leaderboard" component={LeaderboardScreen} options={{
             tabBarIcon: () => (
-              <MaterialIcons name="leaderboard" color="white"></MaterialIcons>
+              <MaterialIcons name="leaderboard" size={16} color="white"></MaterialIcons>
             ),
           }} />
         </Tab.Navigator>
