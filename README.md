@@ -1,7 +1,7 @@
 # Truel
 *Truel* is an online multiplayer game where players bet and shoot at each other with varying probability of kill. The last man standing wins all the stakes.
-## Key point of the code
-*Truel* has two key classes: `Action` and `Event`. `Action` is what `User` can *do* and `Event` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `Event` in `/shared`, in order for that code to work as an *interface*.
+## Structure of the code
+*Truel* has two key classes: `Action` and `Event`. `Action` is what `User` sends to the server and `Event` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `Event` in `/shared`, in order for that code to work as an interface.
 ### `Action`
 `User` can only *perform* `Action`. To perform an `Action`, the client sends a JSON with the following structure:
 ```JSON
@@ -19,7 +19,7 @@ import { plainToClass } from "class-transformer"
 const data = JSON.parse(message.toString())
 const constructor = actionConstructors[data.type]
 const action = plainToClass(constructor, data.args)
-this.hub.emit(action.constructor.name, user, action)
+hub.emit(action.constructor.name, user, action)
 ```
 where `actionConstructors` is an `Object` that you can find a constructor by its name.
 
@@ -34,7 +34,7 @@ actionConstructors["CreateRoom"] === CreateRoom.constructor // true
 After the `Action` is made, the server sends it to `Hub`, which processes it.
 
 ### `Event`
-`Event` is what *happens*. Every time something happens, the `Hub` makes a `Event` and sends it to some `User`s, with the following structure:
+`Event` is what *happens*. Every time something some `User`s must know happens, the `Hub` makes a `Event` and sends it to those `User`s, with the following structure:
 ```JSON
 {
     "type": "UserJoinedRoom",
