@@ -52,7 +52,7 @@ const CreateRoomModal = (props: {
             <TextInput
               style={styles.input}
               onChangeText={setRoomPassword}
-              placeholder="Password"
+              placeholder="Password (optional)"
               secureTextEntry={true}
               value={roomPassword}
             ></TextInput>
@@ -124,7 +124,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonOpen: {
-    backgroundColor: "gray",
+    backgroundColor: "black",
+    border: "1px solid white",
   },
   buttonClose: {
     backgroundColor: "#2196F3",
