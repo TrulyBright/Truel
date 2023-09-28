@@ -1,33 +1,52 @@
-import { SafeAreaView, StyleSheet } from "react-native";
-import Lobby from "./components/Lobby";
+import { StyleSheet } from "react-native"
+import Lobby from "./components/Lobby"
+import HowToPlayScreen from "./components/HowToPlay"
+import { NavigationContainer } from '@react-navigation/native';
+import { AntDesign } from '@expo/vector-icons'; 
+import { Entypo } from '@expo/vector-icons'; 
+import { MaterialIcons } from '@expo/vector-icons'; 
+import LeaderboardScreen from "./components/LeaderboardScreen";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Title from "./components/Title"
+
+const Tab = createBottomTabNavigator()
 
 const App = () => {
     return (
-        <SafeAreaView style={styles.mainView}>
-            <div style={styles.title}>Truel</div>
-            <Lobby></Lobby>
-        </SafeAreaView>
+      <NavigationContainer>
+        <Tab.Navigator initialRouteName="Lobby" sceneContainerStyle={styles.sceneContainer} screenOptions={{
+          tabBarStyle: {
+            backgroundColor: "black",
+            borderTopColor: "black",
+          },
+          tabBarActiveTintColor: "white",
+          tabBarInactiveTintColor: "gray",
+          header: Title
+        }}>
+          <Tab.Screen name="Lobby" component={Lobby} options={{
+            tabBarIcon: () => (
+              <AntDesign name="home" color="white"></AntDesign>
+            ),
+          }} />
+          <Tab.Screen name="How to Play" component={HowToPlayScreen} options={{
+            tabBarIcon: () => (
+              <Entypo name="help" color="white"></Entypo>
+            ),
+          }} />
+          <Tab.Screen name="Leaderboard" component={LeaderboardScreen} options={{
+            tabBarIcon: () => (
+              <MaterialIcons name="leaderboard" color="white"></MaterialIcons>
+            ),
+          }} />
+        </Tab.Navigator>
+      </NavigationContainer>
     )
 }
 
 const styles = StyleSheet.create({
-    mainView: {
-      display: "flex",
-      width: "100%",
-      height: "100%",
+    sceneContainer: {
       backgroundColor: "black",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    title: {
-      color: "white",
-      fontFamily: "times new roman",
-      maxHeight: "5%",
-      fontSize: 40,
-      fontWeight: "bold",
-      textAlign: "center",
-      padding: 5,
-    },
+    }
 })
 
 export default App;

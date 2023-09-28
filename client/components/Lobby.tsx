@@ -41,18 +41,18 @@ const Lobby = () => {
   })
   return (
     <View style={styles.lobby}>
-    <div style={styles.functionBar}>
-      <CreateRoomModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-      ></CreateRoomModal>
-    </div>
     <Text style={[styles.normalText, styles.onlineText]}>{users.length} users & {rooms.length} rooms online.</Text>
     <ScrollView contentContainerStyle={styles.roomList}>
       {rooms.map((room) => (
         <RoomEntry key={room.id} room={room}></RoomEntry>
       ))}
     </ScrollView>
+    <div style={styles.functionBar}>
+      <CreateRoomModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      ></CreateRoomModal>
+    </div>
   </View>
   );
 };
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   lobby: {
     display: "flex",
-    height: "80%",
+    height: "100%",
     flexDirection: "column",
     justifyContent: "space-evenly",
     alignItems: "center",
