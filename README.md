@@ -1,7 +1,7 @@
 # Truel
 *Truel* is an online multiplayer game where players bet and shoot at each other with varying probability of kill. The last man standing wins all the stakes.
 ## Structure of the code
-*Truel* has two key classes: `Action` and `Event`. `Action` is what `User` sends to the server and `Event` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `Event` in `/shared`, in order for that code to work as an interface.
+*Truel* has two key concepts: `Action` and `Event`. `Action` is what `User` sends to the server and `Event` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `Event` in `/shared`, in order for that code to work as an interface.
 ### `Action`
 `User` can only *perform* `Action`. To perform an `Action`, the client sends a JSON with the following structure:
 ```JSON
