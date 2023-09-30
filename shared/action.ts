@@ -6,8 +6,8 @@ export interface Action { }
 export interface InGameAction extends Action { }
 
 export class CreateRoom implements Action {
-    static readonly titleMaxLength = 10
-    static limiter = (title: string) => title.slice(0, CreateRoom.titleMaxLength).replace(/\n/g, ' ').trim()
+    static readonly nameMaxLength = 10
+    static limiter = (name: string) => name.slice(0, CreateRoom.nameMaxLength).replace(/\n/g, ' ').trim()
     constructor(
         public name: string,
         public maxMembers: number,
