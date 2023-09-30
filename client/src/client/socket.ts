@@ -1,6 +1,6 @@
 import { Action } from "@shared/action"
 import { Event, EventConstructor } from "@shared/event"
-import { plainToClass, instanceToPlain } from "class-transformer"
+import { plainToClass, instanceToPlain, plainToInstance } from "class-transformer"
 
 /**
  * Socket class, singleton.
@@ -43,7 +43,7 @@ export default class Socket {
         this.socket.send(data)
     }
 
-    addEventListener(event: EventConstructor, callback: (event: Event) => void) {
+    addEventListener<T extends Event>(event: EventConstructor<T>, callback: (event: T) => void) {
         this.socket.addEventListener("message", (msg) => {
             const data = JSON.parse(msg.data.toString())
             if (data.type === event.name) {

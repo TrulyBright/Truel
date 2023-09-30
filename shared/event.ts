@@ -6,7 +6,7 @@ import { RoomCommonInterface, UserCommonInterface } from "./interfaces"
 
 export interface Event { }
 
-export type EventConstructor = new (...args: any[]) => Event
+export type EventConstructor<T extends Event> = new (...args: any[]) => T
 
 /**
  * Sent to everyone when a user instance is created.

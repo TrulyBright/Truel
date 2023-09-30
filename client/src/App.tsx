@@ -1,24 +1,20 @@
-import { useState } from 'react'
-import { CreateRoom } from "@shared/action"
-import './App.css'
+import TopBar from "./components/TopBar"
+import Socket from "./client/socket"
+import { useState } from "react"
+import Room from "./client/room"
+import { RoomList } from "@shared/event"
 
-export default function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
+  const client = Socket.instance
+  const [rooms, setRooms] = useState<Room[]>([])
+  client.addEventListener(RoomList, (event) => {
+    setRooms(event.rooms.map(room => Room.from(room)))
+  })
   return (
     <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <TopBar></TopBar>
     </>
   )
 }
+
+export default App
