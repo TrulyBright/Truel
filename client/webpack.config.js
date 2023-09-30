@@ -29,6 +29,7 @@ export default {
         },
     },
     output: {
+        filename: "bundle.[contenthash].js",
         path: path.resolve(__dirname, "dist")
     },
     plugins: [
