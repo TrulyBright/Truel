@@ -1,7 +1,7 @@
 import { UserCreated } from "@shared/event"
 import { UserCommonInterface } from "@shared/interfaces"
 
-export class User implements UserCommonInterface {
+export default class User implements UserCommonInterface {
     constructor(
         public readonly name: string
     ) { }

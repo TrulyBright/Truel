@@ -5,7 +5,7 @@ import { plainToClass, instanceToPlain } from "class-transformer"
 /**
  * Socket class, singleton.
  */
-export class Socket {
+export default class Socket {
     private static _instance: Socket
     private socket: WebSocket
     private constructor() {
