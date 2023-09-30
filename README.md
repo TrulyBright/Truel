@@ -19,7 +19,6 @@ import { plainToClass } from "class-transformer"
 const data = JSON.parse(message.toString())
 const constructor = actionConstructors[data.type]
 const action = plainToClass(constructor, data.args)
-hub.emit(action.constructor.name, user, action)
 ```
 where `actionConstructors` is an `Object` that you can find a constructor by its name.
 
@@ -34,7 +33,7 @@ actionConstructors["CreateRoom"] === CreateRoom.constructor // true
 After the `Action` is made, the server sends it to `Hub`, which processes it.
 
 ### `Event`
-`Event` is what *happens*. Every time something some `User`s must know happens, the `Hub` makes a `Event` and sends it to those `User`s, with the following structure:
+`Event` is what *happens*. Every time something some `User`s must know happens, the `Hub` makes an `Event` and sends it to them, with the following structure:
 ```JSON
 {
     "type": "UserJoinedRoom",
