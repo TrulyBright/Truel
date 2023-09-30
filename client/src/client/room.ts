@@ -1,6 +1,6 @@
 import { RoomCreated, RoomUpdated } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
-import User from "./user"
+import User from "@/client/user"
 
 export default class Room implements RoomCommonInterface<User> {
     constructor(

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import strings from '../constants/strings.json'
+import strings from '@/constants/strings.json'
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -37,7 +37,11 @@ function ResponsiveAppBar() {
   };
 
   return (
-    <AppBar>
+    <AppBar position="sticky" sx={{
+      top: 0,
+      left: 0,
+      right: 0,
+    }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography
