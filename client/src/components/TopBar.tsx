@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import strings from '@/constants/strings.json'
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -12,12 +12,13 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+import Link from '@mui/material/Link';
+import { Route } from '@/router/router';
+import { Link as RouterLink } from 'react-router-dom';
 
-const pages = ['Lobby', 'How to Play', 'Leaderboard'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function ResponsiveAppBar() {
+const TopBar = (props: {routes: Route[]}) => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
@@ -48,7 +49,6 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -89,9 +89,9 @@ function ResponsiveAppBar() {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
+              {props.routes.map(route => (
+                <MenuItem key={route.path} onClick={handleCloseNavMenu} component={RouterLink} to={route.path}>
+                  {route.name}
                 </MenuItem>
               ))}
             </Menu>
@@ -100,7 +100,6 @@ function ResponsiveAppBar() {
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -113,15 +112,17 @@ function ResponsiveAppBar() {
             {strings.title}
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            {props.routes.map(route => 
               <Button
-                key={page}
+                key={route.path}
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: 'white', display: 'block' }}
+                component={RouterLink}
+                to={route.path}
               >
-                {page}
+                {route.name}
               </Button>
-            ))}
+            )}
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
@@ -158,4 +159,4 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
-export default ResponsiveAppBar;
+export default TopBar
