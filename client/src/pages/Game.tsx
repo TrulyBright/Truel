@@ -6,6 +6,7 @@ import { RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDelet
 import RoomEntry from "@/components/RoomEntry"
 import Room from "@/client/room"
 import User from "@/client/user"
+import Lobby from "@/components/Lobby"
 
 const Game = () => {
     const client = Socket.instance
@@ -38,9 +39,7 @@ const Game = () => {
     })
     
     return (
-        <Stack sx={{width: "100%"}}>
-            {rooms.map((room) => <RoomEntry room={room} key={room.id}></RoomEntry>)}
-        </Stack>
+        <Lobby users={users} rooms={rooms}></Lobby>
     )
 }
 

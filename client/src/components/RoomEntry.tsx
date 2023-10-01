@@ -1,15 +1,24 @@
 import Room from "@/client/room";
-import { Card, CardContent, Typography } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
+import { Lock } from "@mui/icons-material";
 
 const RoomEntry = (props: {room: Room}) => {
     return (
-        <Card>
-            <CardContent>
-                <Typography color="text.secondary" gutterBottom>{props.room.members.length} / {props.room.maxMembers}</Typography>
-                <Typography variant="h5" component="div">{props.room.name}</Typography>
-                <Typography color="text.secondary">{props.room.host.name}</Typography>
-            </CardContent>
-        </Card>
+        <Paper sx={{
+            textAlign: "center",
+            padding: "0.5em",
+            backgroundColor: "primary.main",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center"
+        }}>
+            <Typography variant="body2">
+                {props.room.name}
+            </Typography>
+            <Typography variant="caption">{props.room.members.length} / {props.room.maxMembers}</Typography>
+            <Lock sx={{visibility: props.room.private ? "hidden":"visible"}} />
+        </Paper>
     )
 }
 

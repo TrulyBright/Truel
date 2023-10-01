@@ -2,6 +2,7 @@ import React from "react"
 import Game from "@/pages/Game"
 import HowToPlay from "@/pages/HowToPlay"
 import Leaderboard from "@/pages/Leaderboard"
+import About from "@/pages/About"
 
 export type Route = {
     path: string
@@ -24,5 +25,10 @@ export const routes: Route[] = [
         path: "/leaderboard",
         element: <Leaderboard></Leaderboard>,
         name: "Leaderboard"
+    },
+    {
+        path: "/about",
+        element: <About></About>,
+        name: "About"
     }
 ]
