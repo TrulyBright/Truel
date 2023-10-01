@@ -13,7 +13,7 @@
     }
 }
 ```
-Once the JSON arrives, the server parses it and finds the constructor for that `Action`. In this case, it's `JoinRoom.constructor`. With the constructor function found, the server makes an `Action` object with arguments given in the `"args"` field in the JSON above, just like the following:
+Once the JSON arrives, the server parses it and finds the constructor for that `Action`. In this case, it's `JoinRoom.constructor`. With the constructor function found, the server makes an `Action` object with the arguments given in the `"args"` field in the JSON above, just like the following:
 ```typescript
 import { plainToClass } from "class-transformer"
 const data = JSON.parse(message.toString())
@@ -24,7 +24,7 @@ where `actionConstructors` is an `Object` that you can find a constructor by its
 
 The following code snippet is for you to understand `actionConstructors`.
 ```typescript
-class CreateRoom {
+class CreateRoom implements Action {
     ...
 }
 actionConstructors["CreateRoom"] === CreateRoom.constructor // true
