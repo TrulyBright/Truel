@@ -2,7 +2,7 @@ import User from "@/user"
 import { EventEmitter } from "node:events"
 import { Broadcasting } from "@/interfaces"
 import { BulletProofBroken, CardPlayed, GameError, Event, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
-import { Action, ChangeDrift, DrawCard, PlayCard, Shoot, actionConstructors } from "@shared/action"
+import { ChangeDrift, DrawCard, PlayCard, Shoot } from "@shared/action"
 import { Card } from "@shared/enums"
 
 export default class Game extends EventEmitter implements Broadcasting {

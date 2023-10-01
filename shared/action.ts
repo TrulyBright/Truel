@@ -64,16 +64,16 @@ export class ChangeDrift implements InGameAction {
 
 export type ActionConstructor = new (...args: any[]) => Action
 
-export const actionConstructors: { [key: string]: ActionConstructor } = {
-    GetRooms,
-    GetUsers,
+export const constructors: Record<string, ActionConstructor> = {
     CreateRoom,
     JoinRoom,
     LeaveRoom,
+    GetRooms,
+    GetUsers,
     Chat,
     StartGame,
     Shoot,
     DrawCard,
     PlayCard,
-    ChangeDrift
+    ChangeDrift,
 }

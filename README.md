@@ -16,18 +16,21 @@
 Once the JSON arrives, the server parses it and finds the constructor for that `Action`. In this case, it's `JoinRoom.constructor`. With the constructor function found, the server makes an `Action` object with the arguments given in the `"args"` field in the JSON above, just like the following:
 ```typescript
 import { plainToClass } from "class-transformer"
-const data = JSON.parse(message.toString())
-const constructor = actionConstructors[data.type]
-const action = plainToClass(constructor, data.args)
+import { constructors } from "@shared/action"
+ws.on("message", (message) => {
+    const data = JSON.parse(message.toString())
+    const constructor = constructors[data.type]
+    const action = plainToClass(constructor, data.args)
+})
 ```
-where `actionConstructors` is an `Object` that you can find a constructor by its name.
+where `constructors` is a `Record` that you can find a constructor by its name.
 
-The following code snippet is for you to understand `actionConstructors`.
+The following code snippet is for you to understand `constructors`.
 ```typescript
 class CreateRoom implements Action {
     ...
 }
-actionConstructors["CreateRoom"] === CreateRoom.constructor // true
+constructors["CreateRoom"] === CreateRoom.constructor // true
 ```
 
 After the `Action` is made, the server sends it to `Hub`, which processes it.

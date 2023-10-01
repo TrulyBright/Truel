@@ -1,9 +1,9 @@
 import "reflect-metadata"
-import { instanceToPlain, plainToClass } from "class-transformer"
+import { instanceToPlain, plainToInstance } from "class-transformer"
 import { WebSocketServer } from "ws"
 import Hub from "@/hub"
 import User from "@/user"
-import { CreateRoom, actionConstructors } from "@shared/action"
+import { CreateRoom, constructors } from "@shared/action"
 import { Event } from "@shared/event"
 
 export default class WebSocketEndpoint {
@@ -32,12 +32,12 @@ export default class WebSocketEndpoint {
             this.hub.addUser(user)
             ws.on("message", (message) => {
                 const data = JSON.parse(message.toString())
-                const constructor = actionConstructors[data.type]
+                const constructor = constructors[data.type]
                 if (!constructor) {
                     console.error("Unknown action: " + JSON.stringify(data))
                     return
                 }
-                const action = plainToClass(constructor, data.args)
+                const action = plainToInstance(constructor, data.args)
                 console.log(`User ${user.name} sent action ${action.constructor.name}`)
                 this.hub.emit(action.constructor.name, user, action)
             })
