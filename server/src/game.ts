@@ -41,7 +41,10 @@ export default class Game extends EventEmitter implements Broadcasting {
             this.currentPlayer = this.survivors[(this.survivors.indexOf(this.currentPlayer) + 1) % this.survivors.length]
         }
     }
-
+    
+    /**
+     * Block for 10 seconds or until the player performs either `Shoot` or `DrawCard`, whichever is earlier.
+     */
     private async playTurn() {
         console.log(`Now turn of ${this.currentPlayer.name}`)
         this.broadcast(new NowTurnOf(this.currentPlayer.name))
