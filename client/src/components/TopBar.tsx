@@ -88,7 +88,7 @@ const TopBar = (props: {routes: Route[]}) => {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {props.routes.map(route => (
+              {props.routes.filter(route => !route.noTopBar).map(route => (
                 <MenuItem key={route.path} onClick={handleCloseNavMenu} component={RouterLink} to={route.path}>
                   {route.name}
                 </MenuItem>
@@ -98,7 +98,6 @@ const TopBar = (props: {routes: Route[]}) => {
           <Typography
             variant="h5"
             noWrap
-            component="a"
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -107,11 +106,13 @@ const TopBar = (props: {routes: Route[]}) => {
               color: 'inherit',
               textDecoration: 'none',
             }}
+            component={RouterLink}
+            to="/"
           >
             {strings.title}
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {props.routes.map(route => 
+            {props.routes.filter(route => !route.noTopBar).map(route => 
               <Button
                 key={route.path}
                 onClick={handleCloseNavMenu}
