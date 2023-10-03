@@ -31,13 +31,13 @@ export default class WebSocketEndpoint {
             })
             this.hub.addUser(user)
             ws.on("message", (message) => {
-                const data = JSON.parse(message.toString())
-                const constructor = constructors[data.type]
+                const { type, args } = JSON.parse(message.toString()) as { type: string, args: any }
+                const constructor = constructors[type]
                 if (!constructor) {
-                    console.error("Unknown action: " + JSON.stringify(data))
+                    console.error(message)
                     return
                 }
-                const action = plainToInstance(constructor, data.args)
+                const action = plainToInstance(constructor, args)
                 console.log(`User ${user.name} sent action ${action.constructor.name}`)
                 this.hub.emit(action.constructor.name, user, action)
             })

@@ -18,9 +18,9 @@ Once the JSON arrives, the server parses it and finds the constructor for that `
 import { plainToClass } from "class-transformer"
 import { constructors } from "@shared/action"
 ws.on("message", (message) => {
-    const data = JSON.parse(message.toString())
-    const constructor = constructors[data.type]
-    const action = plainToClass(constructor, data.args)
+    const { type, args } = JSON.parse(message.toString()) as { type: string, args: any }
+    const constructor = constructors[type]
+    const action = plainToInstance(constructor, args)
 })
 ```
 where `constructors` is a `Record` that you can find a constructor by its name.

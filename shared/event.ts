@@ -6,8 +6,6 @@ import { RoomCommonInterface, UserCommonInterface } from "./interfaces"
 
 export interface Event { }
 
-export type EventConstructor<T extends Event> = new (...args: any[]) => T
-
 /**
  * Sent to everyone when a user instance is created.
  */
@@ -225,4 +223,33 @@ export class CardPlayed implements Event {
         public readonly name: string,
         public readonly card: Card,
     ) { }
+}
+
+export type EventConstructor<T extends Event> = new (...args: any[]) => T
+
+export const constructors: Record<string, EventConstructor<Event>> = {
+    UserCreated,
+    UserDeleted,
+    UserJoinedRoom,
+    UserLeftRoom,
+    UserChat,
+    RoomCreated,
+    RoomDeleted,
+    RoomUpdated,
+    RoomList,
+    UserList,
+    GameError,
+    NewHost,
+    GameStarted,
+    NewRound,
+    UserShot,
+    UserDead,
+    YourTurn,
+    YouDied,
+    NowTurnOf,
+    NewDrift,
+    BulletProofBroken,
+    NewCard,
+    UserDrewCard,
+    CardPlayed,
 }
