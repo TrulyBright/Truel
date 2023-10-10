@@ -73,7 +73,7 @@ export class RoomCreated implements Event {
         public readonly isPrivate: boolean
     ) { }
 
-    static from = (e: RoomCommonInterface<UserCommonInterface>) => new RoomCreated(
+    static from = (e: RoomCommonInterface) => new RoomCreated(
         e.id,
         e.name,
         e.host.name,
@@ -91,7 +91,7 @@ export class RoomDeleted implements Event {
         public readonly id: number,
     ) { }
 
-    static from = (e: RoomCommonInterface<UserCommonInterface>) => new RoomDeleted(e.id)
+    static from = (e: RoomCommonInterface) => new RoomDeleted(e.id)
 }
 
 /**
@@ -107,7 +107,7 @@ export class RoomUpdated implements Event {
         public readonly isPrivate: boolean,
     ) { }
 
-    static from = (e: RoomCommonInterface<UserCommonInterface>) => new RoomUpdated(
+    static from = (e: RoomCommonInterface) => new RoomUpdated(
         e.id,
         e.name,
         e.host.name,
@@ -122,7 +122,7 @@ export class RoomList implements Event {
         public readonly rooms: RoomCreated[],
     ) { }
 
-    static from = (rooms: RoomCommonInterface<UserCommonInterface>[]) => new RoomList(rooms.map(RoomCreated.from))
+    static from = (rooms: RoomCommonInterface[]) => new RoomList(rooms.map(RoomCreated.from))
 }
 
 export class UserList implements Event {
