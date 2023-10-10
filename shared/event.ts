@@ -107,13 +107,13 @@ export class RoomUpdated implements Event {
         public readonly isPrivate: boolean,
     ) { }
 
-    static from = (e: RoomCommonInterface) => new RoomUpdated(
-        e.id,
-        e.name,
-        e.host.name,
-        e.maxMembers,
-        e.members.map(m => m.name),
-        e.private,
+    static from = (r: RoomCommonInterface) => new RoomUpdated(
+        r.id,
+        r.name,
+        r.host.name,
+        r.maxMembers,
+        r.members.map(m => m.name),
+        r.private,
     )
 }
 
@@ -156,7 +156,7 @@ export class NewHost implements Event {
         public readonly name: string,
     ) { }
 
-    static from = (e: UserCommonInterface) => new NewHost(e.name)
+    static from = (u: UserCommonInterface) => new NewHost(u.name)
 }
 
 export class GameStarted implements Event { }
@@ -179,7 +179,7 @@ export class UserDead implements Event {
         public readonly name: string,
     ) { }
 
-    static from = (e: UserCommonInterface) => new UserDead(e.name)
+    static from = (u: UserCommonInterface) => new UserDead(u.name)
 }
 
 export class YourTurn implements Event { }
@@ -190,6 +190,8 @@ export class NowTurnOf implements Event {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (u: UserCommonInterface) => new NowTurnOf(u.name)
 }
 
 export class NewDrift implements Event {

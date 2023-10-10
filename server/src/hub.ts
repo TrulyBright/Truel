@@ -1,32 +1,24 @@
-import { ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InGameAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
+import { Action, ActionConstructor, ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InRoomAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
 import { GameError, Event, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import Room from "@/room";
 import User from "@/user";
-import { EventEmitter } from "node:events";
+import { ActionHandling } from "@/interfaces";
 
-export default class Hub extends EventEmitter implements Broadcasting {
+export default class Hub extends ActionHandling<Action> implements Broadcasting {
     users: User[] = []
     rooms: Map<number, Room> = new Map()
     roomIdCounter = 0
 
     constructor() {
         super()
-        this.on(CreateRoom.name, this.handleCreateRoom)
-        this.on(JoinRoom.name, this.handleJoinRoom)
-        this.on(LeaveRoom.name, this.handleLeaveRoom)
-        this.on(GetRooms.name, this.handleGetRooms)
-        this.on(GetUsers.name, this.handleGetUsers)
-        // Q. What if user.room or user.room.game is undefined in the code below?
-        // A. Just let it throw error.
-        this.on(Chat.name, (user: User, action: Chat) => user.room.handleChat(user, action))
-        this.on(StartGame.name, (user: User, action: StartGame) => user.room.handleStartGame(user, action))
-        const inGameActions = [Shoot, DrawCard, PlayCard, ChangeDrift]
-        inGameActions.forEach(action => {
-            this.on(action.name, (user: User, action: InGameAction) => {
-                user.room.game.emit(action.constructor.name, user, action)
-            })
-        })
+        this.on(CreateRoom, this.onCreateRoom)
+        this.on(JoinRoom, this.onJoinRoom)
+        this.on(LeaveRoom, this.onLeaveRoom)
+        this.on(GetRooms, this.onGetRooms)
+        this.on(GetUsers, this.onGetUsers)
+        const inRoomActions: ActionConstructor<InRoomAction>[] = [Chat, StartGame, Shoot, DrawCard, PlayCard, ChangeDrift]
+        inRoomActions.forEach(action => this.on(action, (user, action) => user.room?.handle(user, action)))
     }
 
     broadcast(event: Event) {
@@ -40,25 +32,24 @@ export default class Hub extends EventEmitter implements Broadcasting {
 
     removeUser(user: User) {
         if (user.room) {
-            this.emit(LeaveRoom.name, user, new LeaveRoom())
+            this.handle(user, new LeaveRoom())
         }
         this.users = this.users.filter(u => u !== user)
         this.broadcast(new UserDeleted(user.name))
     }
 
-    handleCreateRoom(user: User, action: CreateRoom) {
+    private onCreateRoom(user: User, action: CreateRoom) {
         if (user.room) {
             user.recv(new GameError(1002))
             return
         }
-        const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password)
-        room.setHost(user)
+        const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password, user)
         this.rooms.set(room.id, room)
         this.broadcast(RoomCreated.from(room))
-        this.emit(JoinRoom.name, user, new JoinRoom(room.id, room.password))
+        this.handle(user, new JoinRoom(room.id, room.password))
     }
 
-    handleJoinRoom(user: User, action: JoinRoom) {
+    private onJoinRoom(user: User, action: JoinRoom) {
         const room = this.rooms.get(action.roomId)
         if (!room) {
             user.recv(new GameError(1000))
@@ -71,7 +62,7 @@ export default class Hub extends EventEmitter implements Broadcasting {
         }
     }
 
-    handleLeaveRoom(user: User, action: LeaveRoom) {
+    private onLeaveRoom(user: User, action: LeaveRoom) {
         const left = user.room
         if (left) {
             user.leaveRoom()
@@ -86,15 +77,15 @@ export default class Hub extends EventEmitter implements Broadcasting {
         }
     }
 
-    handleGetRooms(user: User, action: GetRooms) {
+    private onGetRooms(user: User, action: GetRooms) {
         user.recv(RoomList.from(Array.from(this.rooms.values())))
     }
 
-    handleGetUsers(user: User, action: GetUsers) {
+    private onGetUsers(user: User, action: GetUsers) {
         user.recv(UserList.from(this.users))
     }
 
-    deleteRoom(room: Room) {
+    private deleteRoom(room: Room) {
         this.rooms.delete(room.id)
         this.broadcast(RoomDeleted.from(room))
     }
@@ -105,9 +96,10 @@ export default class Hub extends EventEmitter implements Broadcasting {
             this.addUser(user)
         }
     }
+
     addDummyRooms() {
         this.users.filter(user => user.name.startsWith("dummy")).forEach((user, i) => {
-            this.emit(CreateRoom.name, user, new CreateRoom("dummyRoom", 8, i % 2 === 0 ? "password": null))
+            this.handle(user, new CreateRoom("dummyRoom", 8, i % 2 === 0 ? "password": null))
         })
     }
 }

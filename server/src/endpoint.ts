@@ -7,8 +7,8 @@ import { constructors } from "@shared/action"
 import { Event } from "@shared/event"
 
 export default class WebSocketEndpoint {
-    wsServer: WebSocketServer
-    hub: Hub = new Hub()
+    readonly wsServer: WebSocketServer
+    readonly hub: Hub = new Hub()
     userIdCounter = 0
     constructor(
         public readonly host: string,
@@ -22,7 +22,7 @@ export default class WebSocketEndpoint {
     start() {
         this.wsServer.on("connection", (ws) => {
             const user = new User("user" + this.userIdCounter++)
-            user.on("Event", (event: Event) => {
+            user.setDefaultListener((event: Event) => {
                 const data = JSON.stringify({
                     type: event.constructor.name,
                     args: instanceToPlain(event)
@@ -38,7 +38,7 @@ export default class WebSocketEndpoint {
                     return
                 }
                 const action = plainToInstance(constructor, args)
-                this.hub.emit(action.constructor.name, user, action)
+                this.hub.handle(user, action)
             }
             ws.onclose = () => {
                 this.hub.removeUser(user)

@@ -1,12 +1,11 @@
-import { Action, Chat, StartGame } from "@shared/action"
+import { Chat, StartGame, Shoot, PlayCard, DrawCard, ChangeDrift, ActionConstructor, InGameAction, InRoomAction } from "@shared/action"
 import { GameError, Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
-import { Broadcasting } from "@/interfaces"
+import { ActionHandling, Broadcasting } from "@/interfaces"
 import User from "@/user"
 import Game from "@/game"
 
-export default class Room implements Broadcasting, RoomCommonInterface<User> {
-    host: User | null = null
+export default class Room extends ActionHandling<InRoomAction> implements Broadcasting, RoomCommonInterface {
     members: User[] = []
     game: Game | null = null
     constructor(
@@ -14,7 +13,14 @@ export default class Room implements Broadcasting, RoomCommonInterface<User> {
         public name: string,
         public maxMembers: number,
         public password: string | null,
-    ) { }
+        public host: User
+    ) {
+        super()
+        this.on(Chat, this.onChat)
+        this.on(StartGame, this.onStartGame)
+        const inGameActions: ActionConstructor<InGameAction>[] = [Shoot, DrawCard, PlayCard, ChangeDrift]
+        inGameActions.forEach(action => this.on(action, (user, action) => this.game?.handle(user, action)))
+    }
 
     get private() {
         return this.password !== null;
@@ -45,19 +51,20 @@ export default class Room implements Broadcasting, RoomCommonInterface<User> {
         }
     }
 
-    setHost(user: User) {
+    private setHost(user: User) {
         this.host = user
         this.broadcast(new NewHost(user.name))
     }
 
-    handleChat(user: User, action: Chat) {
+    private onChat(user: User, action: Chat) {
         this.broadcast(new UserChat(user.name, action.message))
     }
 
-    handleStartGame(user: User, action: StartGame) {
+    private onStartGame(user: User, action: StartGame) {
         if (user === this.host) {
             this.game = new Game(this.members, this)
-            this.game.task = this.game.start().then(() => {
+            this.game.start()
+            this.game.task.then(() => {
                 this.game = null
             })
         } else {

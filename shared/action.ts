@@ -3,7 +3,15 @@ import { UserCommonInterface } from "./interfaces"
 
 export interface Action { }
 
-export interface InGameAction extends Action { }
+/**
+ * Action that `Room` handles.
+ */
+export interface InRoomAction extends Action { }
+
+/**
+ * Action that `Game` handles.
+ */
+export interface InGameAction extends InRoomAction { }
 
 export class CreateRoom implements Action {
     static readonly nameMaxLength = 10
@@ -24,13 +32,18 @@ export class JoinRoom implements Action {
     ) { }
 }
 
+/**
+ * Surely `LeaveRoom` is performed when the `User` is in a `Room`.
+ * But for the sake of good design, I made it not an `InRoomAction` but a general `Action`, which `Hub` handles.
+ * This is because `Hub` is the only one that knows what must happen after a `User` leaves a `Room`.
+ */
 export class LeaveRoom implements Action { }
 
 export class GetRooms implements Action { }
 
 export class GetUsers implements Action { }
 
-export class Chat implements Action {
+export class Chat implements InRoomAction {
     static readonly maxLength = 100
     static readonly limiter = (message: string) => message.slice(0, Chat.maxLength).replace(/\n/g, ' ').trim()
     constructor(
@@ -40,7 +53,7 @@ export class Chat implements Action {
     }
 }
 
-export class StartGame implements Action { }
+export class StartGame implements InRoomAction { }
 
 export class Shoot implements InGameAction {
     constructor(
