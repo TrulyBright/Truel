@@ -24,6 +24,16 @@ export interface RoomCommonInterface {
     get private(): boolean
 }
 
+export interface PlayerCommonInterface {
+    user: UserCommonInterface
+    alive: boolean
+    cash: number
+    probability: number
+    drift: Drift
+
+    get name(): string
+}
+
 type EventListener<T extends Event> = (event: T) => void
 
 export class EventListening {
@@ -39,12 +49,14 @@ export class EventListening {
             this.listeners.set(eventType, new Set())
         }
         this.listeners.get(eventType)!.add(listener as EventListener<Event>)
+        return this
     }
 
     off<T extends Event>(eventType: EventConstructor<T>, listener: EventListener<T>) {
         if (this.listeners.has(eventType)) {
             this.listeners.get(eventType)!.delete(listener as EventListener<Event>)
         }
+        return this
     }
 
     once<T extends Event>(eventType: EventConstructor<T>, listener: EventListener<T>) {
@@ -53,14 +65,16 @@ export class EventListening {
             this.off(event.constructor as EventConstructor<Event>, onceListener as EventListener<Event>)
         }
         this.on(eventType, onceListener as EventListener<T>)
+        return this
     }
 
-    listen<T extends Event>(event: T) {
+    recv<T extends Event>(event: T) {
         this.listeners.get(event.constructor as EventConstructor<Event>)?.forEach(l => l(event))
         this.defaultListeners.forEach(l => l(event))
     }
 
     removeListeners<T extends Event>(event: EventConstructor<T>) {
         this.listeners.delete(event)
+        return this
     }
 }

@@ -1,44 +1,65 @@
 import { Event } from "@shared/event"
 import { Action, ActionConstructor } from "@shared/action"
-import User from "@/user"
 
 export interface Broadcasting {
     broadcast(event: Event): void
 }
 
-type ActionHandler<T extends Action> = (user: User, action: T) => void
+type ActionHandler<Actor, A extends Action> = (actor: Actor, action: A) => void
 
-export class ActionHandling<K extends Action> {
-    private readonly handlers = new Map<ActionConstructor<K>, Set<ActionHandler<K>>>()
+export class ActionHandling<Actor, A extends Action> {
+    private readonly handlers = new Map<ActionConstructor<A>, Set<ActionHandler<Actor, A>>>()
+    private readonly defaultHandlers = new Set<ActionHandler<Actor, A>>()
 
-    on<T extends K>(actionType: ActionConstructor<T>, handler: ActionHandler<T>) {
+    on<T extends A>(actionType: ActionConstructor<T>, handler: ActionHandler<Actor, T>) {
         if (!this.handlers.has(actionType)) {
             this.handlers.set(actionType, new Set())
         }
-        this.handlers.get(actionType)!.add(handler as ActionHandler<K>)
+        this.handlers.get(actionType)!.add(handler as ActionHandler<Actor, A>)
         return this
     }
 
-    off<T extends K>(actionType: ActionConstructor<T>, handler: ActionHandler<T>) {
-        this.handlers.get(actionType)?.delete(handler as ActionHandler<K>)
+    off<T extends A>(actionType: ActionConstructor<T>, handler: ActionHandler<Actor, T>) {
+        this.handlers.get(actionType)?.delete(handler as ActionHandler<Actor, A>)
         return this
     }
 
-    once<T extends K>(actionType: ActionConstructor<T>, handler: ActionHandler<T>) {
-        const onceHandler = (user: User, action: T) => {
-            handler(user, action)
-            this.off(action.constructor as ActionConstructor<T>, onceHandler as ActionHandler<T>)
+    once<T extends A>(actionType: ActionConstructor<T>, handler: ActionHandler<Actor, T>) {
+        const onceHandler = (actor: Actor, action: T) => {
+            handler(actor, action)
+            this.off(action.constructor as ActionConstructor<A>, onceHandler as ActionHandler<Actor, A>)
         }
-        this.on(actionType, onceHandler as ActionHandler<T>)
+        this.on(actionType, onceHandler as ActionHandler<Actor, T>)
         return this
     }
 
-    handle<T extends K>(user: User, action: T) {
-        this.handlers.get(action.constructor as ActionConstructor<K>)?.forEach(h => h(user, action))
+    handle(actor: Actor, action: A) {
+        this.handlers.get(action.constructor as ActionConstructor<A>)?.forEach(handler => handler(actor, action))
+        this.defaultHandlers.forEach(handler => handler(actor, action))
+    }
+
+    setDefaultHandler(handler: ActionHandler<Actor, A>) {
+        this.defaultHandlers.add(handler)
         return this
     }
 
-    removeAllHandlers<T extends K>(actionType: ActionConstructor<T>) {
+    removeDefaultHandler(handler: ActionHandler<Actor, A>) {
+        this.defaultHandlers.delete(handler)
+        return this
+    }
+
+    removeAllDefaultHandlers() {
+        this.defaultHandlers.clear()
+        return this
+    }
+
+    removeAllHandlers() {
+        this.handlers.clear()
+        this.defaultHandlers.clear()
+        return this
+    }
+
+    removeAllHandlersOf<T extends A>(actionType: ActionConstructor<T>) {
         this.handlers.delete(actionType)
         return this
     }

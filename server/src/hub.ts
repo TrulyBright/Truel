@@ -5,20 +5,21 @@ import Room from "@/room";
 import User from "@/user";
 import { ActionHandling } from "@/interfaces";
 
-export default class Hub extends ActionHandling<Action> implements Broadcasting {
+export default class Hub extends ActionHandling<User, Action> implements Broadcasting {
     users: User[] = []
     rooms: Map<number, Room> = new Map()
     roomIdCounter = 0
 
     constructor() {
         super()
-        this.on(CreateRoom, this.onCreateRoom)
-        this.on(JoinRoom, this.onJoinRoom)
-        this.on(LeaveRoom, this.onLeaveRoom)
-        this.on(GetRooms, this.onGetRooms)
-        this.on(GetUsers, this.onGetUsers)
+        this
+        .on(CreateRoom, (actor, action) => this.onCreateRoom(actor, action))
+        .on(JoinRoom, (actor, action) => this.onJoinRoom(actor, action))
+        .on(LeaveRoom, (actor, action) => this.onLeaveRoom(actor, action))
+        .on(GetRooms, (actor, action) => this.onGetRooms(actor, action))
+        .on(GetUsers, (actor, action) => this.onGetUsers(actor, action))
         const inRoomActions: ActionConstructor<InRoomAction>[] = [Chat, StartGame, Shoot, DrawCard, PlayCard, ChangeDrift]
-        inRoomActions.forEach(action => this.on(action, (user, action) => user.room?.handle(user, action)))
+        inRoomActions.forEach(action => this.on(action, (user, action) => {user.room?.handle(user, action)}))
     }
 
     broadcast(event: Event) {

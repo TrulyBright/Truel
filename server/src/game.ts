@@ -1,44 +1,64 @@
-import User from "@/user"
-import { EventEmitter } from "node:events"
-import { Broadcasting } from "@/interfaces"
-import { BulletProofBroken, CardPlayed, GameError, Event, NewCard, NewDrift, NewRound, NowTurnOf, UserDead, UserDrewCard, UserShot, YouDied, YourTurn } from "@shared/event"
-import { ChangeDrift, DrawCard, PlayCard, Shoot } from "@shared/action"
+import { Event } from "@shared/event"
+import { ActionHandling, Broadcasting } from "@/interfaces"
+import { ChangeDrift, DrawCard, InGameAction, PlayCard, Shoot } from "@shared/action"
 import { Card } from "@shared/enums"
+import Player from "@/player"
+import { EventEmitter } from "node:events"
+import { NewRound, NowTurnOf, YourTurn, GameError, PlayerShot, BulletProofBroken, PlayerDead, YouDied, NewCard, PlayerDrewCard, CardPlayed, NewDrift } from "@shared/event"
 
-export default class Game extends EventEmitter implements Broadcasting {
+/**
+ * `Game` does not care what `Room` or `User` is.
+ */
+export default class Game extends ActionHandling<Player, InGameAction> implements Broadcasting {
     static turnTimeLimit = 10000 // ms
     static readonly rounds = 4
-    task: Promise<void>
-    currentPlayer: User
-    turnActionListener = new EventEmitter()
+    task?: Promise<void>
+    currentPlayer?: Player
+    /**
+     * `turnBlocker` is used to block the current turn until the player performs either `Shoot` or `DrawCard`.
+     */
+    readonly turnBlocker = new EventEmitter()
     constructor(
-        public players: User[],
+        public players: Player[],
         public readonly broadcaster: Broadcasting
     ) {
         super()
-        this.on(Shoot.name, this.emitShoot)
-        this.on(DrawCard.name, this.emitDrawCard)
-        this.on(PlayCard.name, this.handlePlayCard)
-        this.on(ChangeDrift.name, this.handleChangeDrift)
+        this
+        .on(Shoot, (actor, action) => this.onShoot(actor, action))
+        .on(DrawCard, (actor, action) => this.onDrawCard(actor, action))
+        .on(PlayCard, (actor, action) => this.onPlayCard(actor, action))
+        .on(ChangeDrift, (actor, action) => this.onChangeDrift(actor, action))
     }
 
+    get survivors() { return this.players.filter(p => p.alive) }
+    get nextSurvivor() { return this.survivors[(this.survivors.indexOf(this.currentPlayer!) + 1) % this.survivors.length] }
+    get randomSurvivor() { return this.players[Math.floor(Math.random() * this.players.length)] }
+
+    /**
+     * `Game` shares broadcast function with `Room`.
+     * This way, anyone in the room can observe the game, even if they are not playing the game.
+     * @param event Event to broadcast.
+     */
     broadcast(event: Event): void {
         this.broadcaster.broadcast(event)
     }
 
-    async start() {
-        this.players.forEach(p => p.resetForNewGame())
-        for (let i = 1; i <= Game.rounds; i++) await this.playRound(i)
+    start() {
+        const run = async () => {
+            this.players.forEach(p => p.reset())
+            for (let i = 1; i <= Game.rounds; i++) await this.playRound(i)
+        }
+        this.task = run()
     }
 
     private async playRound(roundNo: number) {
         console.log(`Round ${roundNo} starts`)
         this.broadcast(new NewRound(roundNo))
-        this.players.forEach(p => p.resetForNewRound())
+        this.players.forEach(p => p.reset())
         this.currentPlayer = this.survivors[0]
         while (this.survivors.length > 1) {
             await this.playTurn()
-            this.currentPlayer = this.survivors[(this.survivors.indexOf(this.currentPlayer) + 1) % this.survivors.length]
+            this.currentPlayer = this.nextSurvivor
         }
     }
     
@@ -46,80 +66,72 @@ export default class Game extends EventEmitter implements Broadcasting {
      * Block for 10 seconds or until the player performs either `Shoot` or `DrawCard`, whichever is earlier.
      */
     private async playTurn() {
-        console.log(`Now turn of ${this.currentPlayer.name}`)
-        this.broadcast(new NowTurnOf(this.currentPlayer.name))
-        await new Promise<void>((resolve, reject) => {
+        this.broadcast(new NowTurnOf(this.currentPlayer!.name))
+        await new Promise<void>(resolve => {
             const timeout = setTimeout(() => {
-                // On timeout, shoot at a random player
-                console.log(`${this.currentPlayer.name} timed out`)
-                const target = this.players[Math.floor(Math.random() * this.players.length)]
-                this.handleShoot(this.currentPlayer, Shoot.from(target))
+                this.onShoot(this.currentPlayer!, Shoot.from(this.randomSurvivor))
                 resolve()
             }, Game.turnTimeLimit)
             const finish = () => {
                 clearTimeout(timeout)
                 resolve()
             }
-            this.turnActionListener
-            .once(Shoot.name, (user: User, action: Shoot) => {
-                this.handleShoot(user, action)
+            this.turnBlocker
+            .once(Shoot.name, (shooting: Player, target: Player) => {
+                this.actuallyShoot(shooting, target)
                 finish()
             })
-            .once(DrawCard.name, (user: User, action: DrawCard) => {
-                this.handleDrawCard(user, action)
+            .once(DrawCard.name, (drawing: Player) => {
+                this.actuallyDrawCard(drawing)
                 finish()
             })
-            this.currentPlayer.recv(new YourTurn())
+            this.currentPlayer!.recv(new YourTurn())
         })
-        this.turnActionListener
+        this.turnBlocker
         .removeAllListeners(Shoot.name)
         .removeAllListeners(DrawCard.name)
     }
 
-    private emitShoot(user: User, action: Shoot) {
-        if (this.currentPlayer !== user) return
-        if (!this.survivors.find(p => p.name === action.target)) {
-            user.recv(new GameError(1004))
+    private onShoot(player: Player, action: Shoot) {
+        if (this.currentPlayer !== player) return
+        const target = this.survivors.find(p => p.name === action.target)
+        if (!target) {
+            player.recv(new GameError(1004))
             return
         }
-        this.turnActionListener.emit(Shoot.name, user, action)
+        this.turnBlocker.emit(Shoot.name, player, target)
     }
 
-    private emitDrawCard(user: User, action: DrawCard) {
-        if (this.currentPlayer !== user) return
-        this.turnActionListener.emit(DrawCard.name, user, action)
+    private onDrawCard(player: Player, action: DrawCard) {
+        if (this.currentPlayer !== player) return
+        this.turnBlocker.emit(DrawCard.name, player)
     }
 
-    private handleShoot(user: User, action: Shoot) {
-        console.log(`${user.name} shoots at ${action.target}`)
-        const target = this.players.find(p => p.name === action.target)
-        this.broadcast(new UserShot(user.name, target.name))
-        if (user.probability > Math.random()) {
+    private actuallyShoot(shooting: Player, target: Player) {
+        this.broadcast(PlayerShot.from(shooting, target))
+        if (shooting.probability > Math.random()) {
             if (target.buff[Card.BulletProof]) {
                 target.buff[Card.BulletProof] = false
-                this.broadcast(new BulletProofBroken(target.name))
+                this.broadcast(BulletProofBroken.from(target))
             } else {
                 target.alive = false
-                this.broadcast(new UserDead(target.name))
+                this.broadcast(PlayerDead.from(target))
                 target.recv(new YouDied())
             }
         }
     }
 
-    private handleDrawCard(user: User, action: DrawCard) {
-        console.log(`${user.name} draws a card`)
-        // Get a random card
+    private actuallyDrawCard(drawing: Player) {
         const pool = Object.keys(Card).map(k => Card[k as keyof typeof Card])
         const card = pool[Math.floor(Math.random() * pool.length)]
-        user.card = card
-        user.recv(new NewCard(card))
-        this.broadcast(new UserDrewCard(user.name))
+        drawing.card = card
+        drawing.recv(new NewCard(card))
+        this.broadcast(PlayerDrewCard.from(drawing))
     }
 
-    private handlePlayCard(user: User, action: PlayCard) {
-        if (this.currentPlayer !== user) return
-        console.log(`${user.name} plays ${user.card}`)
-        switch (user.card) {
+    private onPlayCard(playing: Player, action: PlayCard) {
+        if (this.currentPlayer !== playing) return
+        switch (playing.card) {
             case Card.Robbery:
             case Card.BulletProof:
             case Card.PatronB:
@@ -127,22 +139,20 @@ export default class Game extends EventEmitter implements Broadcasting {
             case Card.Curse:
             case Card.Insurance:
             case Card.LastDitch:
-                user.buff[user.card] = true
+                playing.buff[playing.card] = true
                 break
             case Card.Run:
-                user.has_run = true
+                throw new Error("Not implemented")
             default:
-                throw new Error("Unknown card: " + user.card)
+                throw new Error("Unknown card: " + playing.card)
         }
-        user.card = null
-        this.broadcast(new CardPlayed(user.name, user.card))
+        playing.card = null
+        this.broadcast(CardPlayed.from(playing, playing.card!))
     }
 
-    private handleChangeDrift(user: User, action: ChangeDrift) {
-        if (!this.players.includes(user)) return
-        user.drift = action.drift
-        user.recv(new NewDrift(user.drift))
+    private onChangeDrift(changing: Player, action: ChangeDrift) {
+        if (!this.survivors.includes(changing)) return
+        changing.drift = action.drift
+        changing.recv(new NewDrift(changing.drift))
     }
-
-    get survivors() { return this.players.filter(p => p.alive) }
 }

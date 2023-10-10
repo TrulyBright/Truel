@@ -4,8 +4,9 @@ import { RoomCommonInterface } from "@shared/interfaces"
 import { ActionHandling, Broadcasting } from "@/interfaces"
 import User from "@/user"
 import Game from "@/game"
+import Player from "./player"
 
-export default class Room extends ActionHandling<InRoomAction> implements Broadcasting, RoomCommonInterface {
+export default class Room extends ActionHandling<User, InRoomAction> implements Broadcasting, RoomCommonInterface {
     members: User[] = []
     game: Game | null = null
     constructor(
@@ -16,10 +17,16 @@ export default class Room extends ActionHandling<InRoomAction> implements Broadc
         public host: User
     ) {
         super()
-        this.on(Chat, this.onChat)
-        this.on(StartGame, this.onStartGame)
+        this
+        .on(Chat, (actor, action) => this.onChat(actor, action))
+        .on(StartGame, (actor, action) => this.onStartGame(actor, action))
         const inGameActions: ActionConstructor<InGameAction>[] = [Shoot, DrawCard, PlayCard, ChangeDrift]
-        inGameActions.forEach(action => this.on(action, (user, action) => this.game?.handle(user, action)))
+        inGameActions.forEach(action => this.on(action, (user, action) => {
+            // If user.player is not null, it is guaranteed that the user is playing the game of *this* room.
+            // It is because if the user is playing the game of another room, the user is not in this room,
+            // which means this callback is never called.
+            if (user.player) this.game!.handle(user.player, action)
+        }))
     }
 
     get private() {
@@ -62,9 +69,9 @@ export default class Room extends ActionHandling<InRoomAction> implements Broadc
 
     private onStartGame(user: User, action: StartGame) {
         if (user === this.host) {
-            this.game = new Game(this.members, this)
+            this.game = new Game(this.members.map(m => new Player(m)), this)
             this.game.start()
-            this.game.task.then(() => {
+            this.game.task!.then(() => {
                 this.game = null
             })
         } else {

@@ -2,7 +2,7 @@
  * This file contains all the events that can be sent to the client.
  */
 import { Card, Drift } from "./enums"
-import { RoomCommonInterface, UserCommonInterface } from "./interfaces"
+import { PlayerCommonInterface, RoomCommonInterface, UserCommonInterface } from "./interfaces"
 
 export interface Event { }
 
@@ -167,19 +167,23 @@ export class NewRound implements Event {
     ) { }
 }
 
-export class UserShot implements Event {
+export class PlayerShot implements Event {
     constructor(
         public readonly shooting: string,
         public readonly target: string,
     ) { }
+
+    static from(shooting: PlayerCommonInterface, target: PlayerCommonInterface) {
+        return new PlayerShot(shooting.name, target.name)
+    }
 }
 
-export class UserDead implements Event {
+export class PlayerDead implements Event {
     constructor(
         public readonly name: string,
     ) { }
 
-    static from = (u: UserCommonInterface) => new UserDead(u.name)
+    static from = (p: PlayerCommonInterface) => new PlayerDead(p.name)
 }
 
 export class YourTurn implements Event { }
@@ -191,7 +195,7 @@ export class NowTurnOf implements Event {
         public readonly name: string,
     ) { }
 
-    static from = (u: UserCommonInterface) => new NowTurnOf(u.name)
+    static from = (p: PlayerCommonInterface) => new NowTurnOf(p.name)
 }
 
 export class NewDrift implements Event {
@@ -204,6 +208,8 @@ export class BulletProofBroken implements Event {
     constructor(
         public readonly name: string,
     ) { }
+
+    static from = (p: PlayerCommonInterface) => new BulletProofBroken(p.name)
 }
 
 export class NewCard implements Event {
@@ -212,12 +218,12 @@ export class NewCard implements Event {
     ) { }
 }
 
-export class UserDrewCard implements Event {
+export class PlayerDrewCard implements Event {
     constructor(
         public readonly name: string,
     ) { }
 
-    static from = (e: UserCommonInterface) => new UserDrewCard(e.name)
+    static from = (p: PlayerCommonInterface) => new PlayerDrewCard(p.name)
 }
 
 export class CardPlayed implements Event {
@@ -225,6 +231,8 @@ export class CardPlayed implements Event {
         public readonly name: string,
         public readonly card: Card,
     ) { }
+
+    static from = (p: PlayerCommonInterface, card: Card) => new CardPlayed(p.name, card)
 }
 
 export type EventConstructor<T extends Event> = new (...args: any[]) => T
@@ -244,14 +252,14 @@ export const constructors: Record<string, EventConstructor<Event>> = {
     NewHost,
     GameStarted,
     NewRound,
-    UserShot,
-    UserDead,
+    PlayerShot,
+    PlayerDead,
     YourTurn,
     YouDied,
     NowTurnOf,
     NewDrift,
     BulletProofBroken,
     NewCard,
-    UserDrewCard,
+    PlayerDrewCard,
     CardPlayed,
 }
