@@ -12,11 +12,11 @@ export interface UserCommonInterface {
 /**
  * Properties of Room that are common to both server and client.
  */
-export interface RoomCommonInterface<T extends UserCommonInterface>{
+export interface RoomCommonInterface{
     readonly id: number
     name: string
-    host: T
-    members: T[]
+    host: UserCommonInterface
+    members: UserCommonInterface[]
     maxMembers: number
 
     get private(): boolean
