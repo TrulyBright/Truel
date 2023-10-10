@@ -1,5 +1,7 @@
-export class Queue<T> {
-    private elements: Record<number, T> = {}
+import { Event, EventConstructor } from "./event"
+
+export class Queue {
+    private elements: Record<number, Event> = {}
     private head: number = 0
     private tail: number = 0
 
@@ -11,12 +13,12 @@ export class Queue<T> {
         return this.length === 0
     }
 
-    enqueue(element: T): void {
+    enqueue<T extends Event>(element: T): void {
         this.elements[this.tail] = element
         this.tail++
     }
 
-    dequeue(): T {
+    dequeue() {
         const item = this.elements[this.head]
         delete this.elements[this.head]
         this.head++
@@ -27,10 +29,10 @@ export class Queue<T> {
         while (!this.empty) this.dequeue()
     }
 
-    findItemOf(targetType: Function): T {
+    findItemOf<V extends Event>(targetType: EventConstructor<V>): V {
         while (!this.empty) {
             const popped = this.dequeue()
-            if (popped.constructor === targetType) return popped
+            if (popped instanceof targetType) return popped
         }
         throw new Error(`${targetType.name} is not in the queue.`)
     }
