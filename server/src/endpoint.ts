@@ -3,7 +3,7 @@ import { instanceToPlain, plainToInstance } from "class-transformer"
 import { WebSocketServer } from "ws"
 import Hub from "@/hub"
 import User from "@/user"
-import { CreateRoom, constructors } from "@shared/action"
+import { constructors } from "@shared/action"
 import { Event } from "@shared/event"
 
 export default class WebSocketEndpoint {
@@ -30,35 +30,23 @@ export default class WebSocketEndpoint {
                 ws.send(data)
             })
             this.hub.addUser(user)
-            ws.on("message", (message) => {
-                const { type, args } = JSON.parse(message.toString()) as { type: string, args: any }
+            ws.onmessage = (message) => {
+                const { type, args } = JSON.parse(message.data.toString()) as { type: string, args: any }
                 const constructor = constructors[type]
                 if (!constructor) {
                     console.error(message)
                     return
                 }
                 const action = plainToInstance(constructor, args)
-                console.log(`User ${user.name} sent action ${action.constructor.name}`)
                 this.hub.emit(action.constructor.name, user, action)
-            })
-            ws.on("close", () => {
+            }
+            ws.onclose = () => {
                 this.hub.removeUser(user)
-            })
+            }
         })
     }
     close() {
         this.wsServer.close()
-    }
-    addDummyUsers(count: number) {
-        for (let i = 0; i < count; i++) {
-            const user = new User("dummy" + i)
-            this.hub.addUser(user)
-        }
-    }
-    addDummyRooms() {
-        this.hub.users.filter(user => user.name.startsWith("dummy")).forEach((user, i) => {
-            this.hub.emit(CreateRoom.name, user, new CreateRoom("dummyRoom", 8, i % 2 === 0 ? "password": null))
-        })
     }
     get URI() {
         return `ws://${this.host}:${this.port}`

@@ -98,4 +98,16 @@ export default class Hub extends EventEmitter implements Broadcasting {
         this.rooms.delete(room.id)
         this.broadcast(RoomDeleted.from(room))
     }
+
+    addDummyUsers(count: number) {
+        for (let i = 0; i < count; i++) {
+            const user = new User("dummy" + i)
+            this.addUser(user)
+        }
+    }
+    addDummyRooms() {
+        this.users.filter(user => user.name.startsWith("dummy")).forEach((user, i) => {
+            this.emit(CreateRoom.name, user, new CreateRoom("dummyRoom", 8, i % 2 === 0 ? "password": null))
+        })
+    }
 }

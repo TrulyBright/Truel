@@ -6,5 +6,5 @@ config({ path: path.resolve(__dirname, "../.env") })
 
 const endpoint = new WebSocketEndpoint(process.env.HOSTNAME!, Number(process.env.PORT))
 endpoint.start()
-endpoint.addDummyUsers(256)
-endpoint.addDummyRooms()
+endpoint.hub.addDummyUsers(256)
+endpoint.hub.addDummyRooms()
