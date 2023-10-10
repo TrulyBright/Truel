@@ -15,7 +15,7 @@ export interface UserCommonInterface {
 export interface RoomCommonInterface<T extends UserCommonInterface>{
     readonly id: number
     name: string
-    host: T | null
+    host: T
     members: T[]
     maxMembers: number
 
