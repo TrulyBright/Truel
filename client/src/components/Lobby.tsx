@@ -33,7 +33,7 @@ const Lobby = () => {
         .on(UserList, (event) => {
             setUsers(event.users.map((user) => User.from(user)))
         })
-        .waitUntilConnected()
+        .assureConnected()
         .then(() => {
             Client.perform(new GetRooms())
             Client.perform(new GetUsers())

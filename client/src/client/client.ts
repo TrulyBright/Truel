@@ -1,81 +1,52 @@
-import { Action } from "@shared/action"
-import { Event, EventConstructor, constructors } from "@shared/event"
-import { instanceToPlain, plainToInstance } from "class-transformer"
+import { Action } from "@shared/action";
+import { constructors } from "@shared/event";
+import { EventListening } from "@shared/interfaces";
+import { instanceToPlain, plainToInstance } from "class-transformer";
 
-class Client {
-    private ws: WebSocket
-    private readonly listeners: Record<string, ((event: Event) => void)[]> = {}
+class Client extends EventListening {
+    private ws?: WebSocket
 
     constructor(
         public readonly host: string,
-        public readonly port: number,
+        public readonly port: number
     ) {
-        this.connect()
+        super()
     }
+
+    get URI() { return `ws://${this.host}:${this.port}` }
 
     connect() {
-        if (this.ws) throw new Error("Already connected")
-        this.ws = new WebSocket(`ws://${this.host}:${this.port}`)
-        this.ws.onmessage = (message) => {
-            const { type, args } = JSON.parse(message.data.toString()) as { type: string, args: any }
+        this.ws = new WebSocket(this.URI)
+        this.ws.onmessage = (e) => {
+            const { type, args } = JSON.parse(e.data) as { type: string, args: any }
             const constructor = constructors[type]
             const event = plainToInstance(constructor, args)
-            this.emit(constructor, event)
+            console.log(type, args)
+            this.recv(event)
         }
+        return this
     }
-    
+
     disconnect() {
-        this.ws.close()
+        this.ws!.close()
     }
 
-    get connected() {
-        return this.ws.readyState === WebSocket.OPEN
-    }
-
-    waitUntilConnected() {
+    assureConnected() {
         return new Promise<void>((resolve, reject) => {
-            if (this.connected) resolve()
-            else {
-                this.ws.onopen = () => resolve()
-                this.ws.onerror = (e) => reject(e)
-            }
+            if (!this.ws) reject()
+            if (this.ws!.readyState === WebSocket.OPEN) resolve()
+            this.ws!.onopen = () => resolve()
         })
     }
 
-    perform<T extends Action>(action: T) {
-        const payload = {
+    perform<A extends Action>(action: A) {
+        const data = {
             type: action.constructor.name,
             args: instanceToPlain(action)
         }
-        const serialized = JSON.stringify(payload)
-        console.log(serialized)
-        this.ws.send(serialized)
-    }
-
-    on<T extends Event>(type: EventConstructor<T>, listener: (event: T) => void) {
-        if (!this.listeners[type.name]) this.listeners[type.name] = []
-        this.listeners[type.name].push(listener)
-        return this
-    }
-
-    off<T extends Event>(type: EventConstructor<T>, listener: (event: T) => void) {
-        if (!this.listeners[type.name]) return
-        this.listeners[type.name] = this.listeners[type.name].filter(l => l !== listener)
-        return this
-    }
-
-    once<T extends Event>(type: EventConstructor<T>, listener: (event: T) => void) {
-        const once = (event: T) => {
-            this.off(type, once)
-            listener(event)
-        }
-        this.on(type, once)
-        return this
-    }
-
-    private emit<T extends Event>(type: EventConstructor<T>, event: T) {
-        if (!this.listeners[type.name]) return
-        this.listeners[type.name].forEach(l => l(event))
+        const raw = JSON.stringify(data)
+        console.log(data.type, data.args)
+        this.ws!.send(raw)
     }
 }
 

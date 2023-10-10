@@ -23,11 +23,13 @@ export default class WebSocketEndpoint {
         this.wsServer.on("connection", (ws) => {
             const user = new User("user" + this.userIdCounter++)
             user.setDefaultListener((event: Event) => {
-                const data = JSON.stringify({
+                const data = {
                     type: event.constructor.name,
                     args: instanceToPlain(event)
-                })
-                ws.send(data)
+                }
+                const raw = JSON.stringify(data)
+                if (process.env.DEBUG) console.log(`${user.name} <- ${data.type}`)
+                ws.send(raw)
             })
             this.hub.addUser(user)
             ws.onmessage = (message) => {
@@ -38,6 +40,7 @@ export default class WebSocketEndpoint {
                     return
                 }
                 const action = plainToInstance(constructor, args)
+                if (process.env.DEBUG) console.log(`${user.name} -> ${type}`)
                 this.hub.handle(user, action)
             }
             ws.onclose = () => {
