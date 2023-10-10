@@ -2,6 +2,7 @@
     "compilerOptions": {
         "module": "ESNext",
         "target": "ESNext",
+        "strict": true,
         "outDir": "dist",
         "jsx": "react-jsx",
         "paths": {
