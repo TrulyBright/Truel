@@ -20,7 +20,7 @@ export class CreateRoom implements Action {
 export class JoinRoom implements Action {
     constructor(
         public roomId: number,
-        public password: string
+        public password: string | null
     ) { }
 }
 
