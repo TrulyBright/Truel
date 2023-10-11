@@ -3,14 +3,22 @@ import { constructors } from "@shared/event";
 import { EventListening } from "@shared/interfaces";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 
-class Client extends EventListening {
+export default class Client extends EventListening {
+    private static _instance?: Client
     private ws?: WebSocket
 
-    constructor(
+    private constructor(
         public readonly host: string,
         public readonly port: number
     ) {
         super()
+    }
+
+    static get instance() {
+        if (!Client._instance) {
+            Client._instance = new Client("localhost", 8080)
+        }
+        return Client._instance
     }
 
     get URI() { return `ws://${this.host}:${this.port}` }
@@ -49,5 +57,3 @@ class Client extends EventListening {
         this.ws!.send(raw)
     }
 }
-
-export default new Client("localhost", 8080)

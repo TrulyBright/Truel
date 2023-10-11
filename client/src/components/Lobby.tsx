@@ -11,7 +11,7 @@ const Lobby = () => {
     const [rooms, setRooms] = useState<Room[]>([])
     const [users, setUsers] = useState<User[]>([])
     useEffect(() => {
-        Client
+        Client.instance
         .on(RoomCreated, (event) => {
             setRooms((rooms) => [...rooms, Room.from(event)])
         })
@@ -33,12 +33,8 @@ const Lobby = () => {
         .on(UserList, (event) => {
             setUsers(event.users.map((user) => User.from(user)))
         })
-        .assureConnected()
-        .then(() => {
-            Client.perform(new GetRooms())
-            Client.perform(new GetUsers())
-        })
-        .catch(console.error)
+        Client.instance.perform(new GetRooms())
+        Client.instance.perform(new GetUsers())
     }, [])
     return (
         <Box sx={{
