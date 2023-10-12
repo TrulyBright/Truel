@@ -1,10 +1,11 @@
 import { Chat, StartGame, Shoot, PlayCard, DrawCard, ChangeDrift, ActionConstructor, InGameAction, InRoomAction } from "@shared/action"
-import { GameError, Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
 import { ActionHandling, Broadcasting } from "@/interfaces"
 import User from "@/user"
 import Game from "@/game"
-import Player from "./player"
+import Player from "@/player"
+import { ErrorCode } from "@shared/enums"
 
 export default class Room extends ActionHandling<User, InRoomAction> implements Broadcasting, RoomCommonInterface {
     members: User[] = []
@@ -68,14 +69,11 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
     }
 
     private onStartGame(user: User, action: StartGame) {
-        if (user === this.host) {
-            this.game = new Game(this.members.map(m => new Player(m)), this)
-            this.game.start()
-            this.game.task!.then(() => {
-                this.game = null
-            })
-        } else {
-            user.recv(new GameError(1002))
-        }
+        if (user !== this.host) throw new Error(ErrorCode[ErrorCode.YouAreNotHost])
+        this.game = new Game(this.members.map(m => new Player(m)), this)
+        this.game.start()
+        this.game.task!.then(() => {
+            this.game = null
+        })
     }
 }

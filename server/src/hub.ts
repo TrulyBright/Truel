@@ -4,6 +4,7 @@ import { Broadcasting } from "@/interfaces";
 import Room from "@/room";
 import User from "@/user";
 import { ActionHandling } from "@/interfaces";
+import { ErrorCode } from "@shared/enums";
 
 export default class Hub extends ActionHandling<User, Action> implements Broadcasting {
     users: User[] = []
@@ -22,16 +23,30 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         inRoomActions.forEach(action => this.on(action, (user, action) => {user.room?.handle(user, action)}))
     }
 
+    override handle(user: User, action: Action) {
+        try {
+            super.handle(user, action)
+        } catch (e) {
+            if (e instanceof Error) {
+                user.recv(new GameError(ErrorCode[e.message as keyof typeof ErrorCode]))
+            } else {
+                throw e
+            }
+        }
+    }
+
     broadcast(event: Event) {
         this.users.forEach(user => user.recv(event))
     }
 
     addUser(user: User) {
+        console.log(`${user.name} joined`)
         this.users.push(user)
         this.broadcast(new UserCreated(user.name))
     }
 
     removeUser(user: User) {
+        console.log(`${user.name} left`)
         if (user.room) {
             this.handle(user, new LeaveRoom())
         }
@@ -40,10 +55,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
     }
 
     private onCreateRoom(user: User, action: CreateRoom) {
-        if (user.room) {
-            user.recv(new GameError(1002))
-            return
-        }
+        if (user.room) {this.handle(user, new LeaveRoom())}
         const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password, user)
         this.rooms.set(room.id, room)
         this.broadcast(RoomCreated.from(room))
@@ -52,29 +64,21 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
 
     private onJoinRoom(user: User, action: JoinRoom) {
         const room = this.rooms.get(action.roomId)
-        if (!room) {
-            user.recv(new GameError(1000))
-        } else if (room.password !== action.password) {
-            user.recv(new GameError(1003))
-        } else {
-            room.addMember(user)
-            user.joinRoom(room)
-            this.broadcast(RoomUpdated.from(room))
-        }
+        if (!room) throw new Error(ErrorCode[ErrorCode.NoSuchRoom])
+        if (room.password !== action.password) throw new Error(ErrorCode[ErrorCode.WrongPassword])
+        room.addMember(user)
+        user.joinRoom(room)
+        this.broadcast(RoomUpdated.from(room))
     }
 
     private onLeaveRoom(user: User, action: LeaveRoom) {
-        const left = user.room
-        if (left) {
-            user.leaveRoom()
-            left.removeMember(user)
-            if (left.empty) {
-                this.deleteRoom(left)
-            } else {
-                this.broadcast(RoomUpdated.from(left))
-            }
+        const left = user.room!
+        user.leaveRoom()
+        left.removeMember(user)
+        if (left.empty) {
+            this.deleteRoom(left)
         } else {
-            user.recv(new GameError(1001))
+            this.broadcast(RoomUpdated.from(left))
         }
     }
 

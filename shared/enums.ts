@@ -1,3 +1,9 @@
+export enum ErrorCode {
+    NoSuchRoom,
+    WrongPassword,
+    YouAreNotHost,
+}
+
 export enum Card {
     Robbery, // Take 4 times more money from the target
     BulletProof, // Immune to the next shot

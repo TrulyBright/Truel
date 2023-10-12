@@ -1,7 +1,7 @@
 /**
  * This file contains all the events that can be sent to the client.
  */
-import { Card, Drift } from "./enums"
+import { Card, Drift, ErrorCode } from "./enums"
 import { PlayerCommonInterface, RoomCommonInterface, UserCommonInterface } from "./interfaces"
 
 export interface Event { }
@@ -133,18 +133,14 @@ export class UserList implements Event {
     static from = (users: UserCommonInterface[]) => new UserList(users.map(UserCreated.from))
 }
 
-/**
- * Sent to the user when an error occurs.
- * 1000: Room not found
- * 1001: User not in a room
- * 1002: User is not the host
- * 1003: User not found
- * 1004: User is not alive
- * 9999: Unknown error
- */
+export class YouAreInRoom implements Event { }
+
+export class YouAreOutOfRoom implements Event { }
+
+
 export class GameError implements Event {
     constructor(
-        public readonly code: number,
+        public readonly code: ErrorCode,
     ) { }
 }
 
@@ -262,4 +258,6 @@ export const constructors: Record<string, EventConstructor<Event>> = {
     NewCard,
     PlayerDrewCard,
     CardPlayed,
+    YouAreInRoom,
+    YouAreOutOfRoom
 }

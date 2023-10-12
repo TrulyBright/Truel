@@ -4,7 +4,7 @@ import { ChangeDrift, DrawCard, InGameAction, PlayCard, Shoot } from "@shared/ac
 import { Card } from "@shared/enums"
 import Player from "@/player"
 import { EventEmitter } from "node:events"
-import { NewRound, NowTurnOf, YourTurn, GameError, PlayerShot, BulletProofBroken, PlayerDead, YouDied, NewCard, PlayerDrewCard, CardPlayed, NewDrift } from "@shared/event"
+import { NewRound, NowTurnOf, YourTurn, PlayerShot, BulletProofBroken, PlayerDead, YouDied, NewCard, PlayerDrewCard, CardPlayed, NewDrift } from "@shared/event"
 
 /**
  * `Game` does not care what `Room` or `User` is.
@@ -94,11 +94,7 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
 
     private onShoot(player: Player, action: Shoot) {
         if (this.currentPlayer !== player) return
-        const target = this.survivors.find(p => p.name === action.target)
-        if (!target) {
-            player.recv(new GameError(1004))
-            return
-        }
+        const target = this.survivors.find(p => p.name === action.target)!
         this.turnBlocker.emit(Shoot.name, player, target)
     }
 
@@ -143,11 +139,9 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
                 break
             case Card.Run:
                 throw new Error("Not implemented")
-            default:
-                throw new Error("Unknown card: " + playing.card)
         }
-        playing.card = null
         this.broadcast(CardPlayed.from(playing, playing.card!))
+        playing.card = null
     }
 
     private onChangeDrift(changing: Player, action: ChangeDrift) {
