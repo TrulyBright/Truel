@@ -1,7 +1,9 @@
 {
     "scripts": {
         "build": "node esbuild.build.mjs",
-        "watch": "node esbuild.watch.mjs"
+        "watch": "node esbuild.watch.mjs",
+        "serve": "node esbuild.serve.mjs",
+        "build:azure": "npm run build"
     },
     "devDependencies": {
         "react-router-dom": "^6.16.0",
