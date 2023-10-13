@@ -1,26 +1,18 @@
 {
-    "type": "module",
     "scripts": {
-        "start": "webpack serve --mode development --port 8000",
-        "build:azure": "webpack --mode production"
+        "build": "node esbuild.build.mjs",
+        "watch": "node esbuild.watch.mjs"
     },
     "devDependencies": {
-        "css-loader": "^6.8.1",
         "react-router-dom": "^6.16.0",
-        "style-loader": "^3.3.3",
-        "terser-webpack-plugin": "^5.3.9",
-        "ts-loader": "^9.4.4",
-        "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4",
-        "webpack-dev-server": "^4.15.1"
+        "esbuild": "^0.19.4",
+        "@types/react-dom": "^18.2.12"
     },
     "dependencies": {
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@mui/icons-material": "^5.14.11",
         "@mui/material": "^5.14.11",
-        "@types/react-dom": "^18.2.12",
-        "class-transformer": "^0.5.1",
-        "html-webpack-plugin": "^5.5.3"
+        "class-transformer": "^0.5.1"
     }
 }
