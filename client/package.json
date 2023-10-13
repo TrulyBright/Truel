@@ -5,17 +5,16 @@
         "serve": "node esbuild.serve.mjs",
         "build:azure": "npm run build"
     },
-    "devDependencies": {
-        "@types/react-dom": "^18.2.12",
-        "esbuild": "^0.19.4"
-    },
     "dependencies": {
         "@craftamap/esbuild-plugin-html": "^0.6.1",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
-        "@mui/icons-material": "^5.14.11",
-        "@mui/material": "^5.14.11",
+        "@mui/icons-material": "^5.14.13",
+        "@mui/material": "^5.14.13",
         "class-transformer": "^0.5.1",
+        "esbuild": "^0.19.4",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-router-dom": "^6.16.0"
     }
 }
