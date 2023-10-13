@@ -6,11 +6,11 @@
         "build:azure": "npm run build"
     },
     "devDependencies": {
-        "react-router-dom": "^6.16.0",
         "esbuild": "^0.19.4",
         "@types/react-dom": "^18.2.12"
     },
     "dependencies": {
+        "react-router-dom": "^6.16.0",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@mui/icons-material": "^5.14.11",
