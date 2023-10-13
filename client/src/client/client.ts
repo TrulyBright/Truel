@@ -56,4 +56,9 @@ export default class Client extends EventListening {
         console.log(data.type, data.args)
         this.ws!.send(raw)
     }
+
+    onDisconnect(callback: () => void) {
+        this.ws!.onclose = callback
+        return this
+    }
 }
