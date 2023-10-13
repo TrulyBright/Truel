@@ -6,9 +6,6 @@ import { PlayerCommonInterface, RoomCommonInterface, UserCommonInterface } from 
 
 export interface Event { }
 
-/**
- * Sent to everyone when a user instance is created.
- */
 export class UserCreated implements Event {
     constructor(
         public readonly name: string,
@@ -17,9 +14,6 @@ export class UserCreated implements Event {
     static from = (e: UserCommonInterface) => new UserCreated(e.name)
 }
 
-/**
- * Sent to everyone when a user instance is deleted.
- */
 export class UserDeleted implements Event {
     constructor(
         public readonly name: string,
@@ -28,9 +22,6 @@ export class UserDeleted implements Event {
     static from = (e: UserCommonInterface) => new UserDeleted(e.name)
 }
 
-/**
- * Sent to the members of a room when a user joined that room.
- */
 export class UserJoinedRoom implements Event {
     constructor(
         public readonly name: string,
@@ -39,9 +30,6 @@ export class UserJoinedRoom implements Event {
     static from = (e: UserCommonInterface) => new UserJoinedRoom(e.name)
 }
 
-/**
- * Sent to the members of a room when a user left that room.
- */
 export class UserLeftRoom implements Event {
     constructor(
         public readonly name: string,
@@ -50,9 +38,6 @@ export class UserLeftRoom implements Event {
     static from = (e: UserCommonInterface) => new UserLeftRoom(e.name)
 }
 
-/**
- * Sent to the members of a room when a user sent a chat message.
- */
 export class UserChat implements Event {
     constructor(
         public readonly name: string,
@@ -60,9 +45,6 @@ export class UserChat implements Event {
     ) { }
 }
 
-/**
- * Sent to everyone in the server when a room instance is created.
- */
 export class RoomCreated implements Event {
     constructor(
         public readonly id: number,
@@ -83,9 +65,6 @@ export class RoomCreated implements Event {
     )
 }
 
-/**
- * Sent to everyone in the server when a room instance is deleted.
- */
 export class RoomDeleted implements Event {
     constructor(
         public readonly id: number,
@@ -94,9 +73,6 @@ export class RoomDeleted implements Event {
     static from = (e: RoomCommonInterface) => new RoomDeleted(e.id)
 }
 
-/**
- * Sent to everyone in the server when a room instance is updated.
- */
 export class RoomUpdated implements Event {
     constructor(
         public readonly id: number,
@@ -144,9 +120,6 @@ export class GameError implements Event {
     ) { }
 }
 
-/**
- * Sent to the members of a room when a new host is set.
- */
 export class NewHost implements Event {
     constructor(
         public readonly name: string,
