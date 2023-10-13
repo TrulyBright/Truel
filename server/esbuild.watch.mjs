@@ -16,7 +16,7 @@ const context = await esbuild.context({
             })
             onEnd(() => {
                 console.log(`Server ${serverProcess ? "rebuilt" : "built"} in ${Date.now() - t} ms. ${serverProcess ? "Restarting" : "Starting"} the server...`)
-                serverProcess = spawn("node", [options.outfile])
+                serverProcess = spawn("node", [options.outfile], {stdio: "inherit"})
             })
         }
     }]
