@@ -66,6 +66,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         if (user.room) throw new Error(ErrorCode[ErrorCode.AlreadyInRoom])
         const room = this.rooms.get(action.roomId)
         if (!room) throw new Error(ErrorCode[ErrorCode.NoSuchRoom])
+        if (room.full) throw new Error(ErrorCode[ErrorCode.RoomFull])
         if (room.password !== action.password) throw new Error(ErrorCode[ErrorCode.WrongPassword])
         room.addMember(user)
         user.joinRoom(room)

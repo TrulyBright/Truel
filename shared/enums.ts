@@ -2,7 +2,8 @@ export enum ErrorCode {
     NoSuchRoom,
     WrongPassword,
     YouAreNotHost,
-    AlreadyInRoom
+    AlreadyInRoom,
+    RoomFull
 }
 
 export enum Card {

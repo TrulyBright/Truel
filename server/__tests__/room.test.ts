@@ -2,6 +2,7 @@ import Hub from "@/hub"
 import Room from "@/room"
 import User from "@/user"
 import { Chat, CreateRoom, JoinRoom, LeaveRoom } from "@shared/action"
+import { ErrorCode } from "@shared/enums"
 import { GameError, Event, NewHost, RoomCreated, RoomDeleted, RoomUpdated, UserChat, UserCreated, UserJoinedRoom, UserLeftRoom } from "@shared/event"
 
 // Scenario #1: Create, Join, Leave
@@ -48,7 +49,11 @@ test("Scenario #1", () => {
     expect(roomCreated.id).toBe(room.id)
     expect(roomCreated.maxMembers).toBe(room.maxMembers)
     expect(roomCreated.name).toBe(room.name)
-    // 3. Another user joins the room.
+    // 3. Another user joins the room, after one failture with a wrong password.
+    hub.handle(user2, new JoinRoom(room.id, room.password + "1234"))
+    const wrongPassword = user2.last50Events.findItemOf(GameError)
+    expect(wrongPassword.code).toBe(ErrorCode.WrongPassword)
+    expect(room.members).not.toContain(user2)
     hub.handle(user2, new JoinRoom(room.id, room.password))
     expect(room.host).toBe(user1)
     expect(room.members).toContain(user1)
@@ -58,13 +63,13 @@ test("Scenario #1", () => {
         const user2JoinedRoom = member.last50Events.findItemOf(UserJoinedRoom)
         expect(user2JoinedRoom.name).toBe(user2.name)
     })
-    // 4. The third user fails to join the room.
+    // 4. The third user fails to join the full room.
     const user3WhoFailsToJoin = new User("user3")
     hub.addUser(user3WhoFailsToJoin)
-    hub.handle(user3WhoFailsToJoin, new JoinRoom(room.id, null))
+    hub.handle(user3WhoFailsToJoin, new JoinRoom(room.id, password))
     expect(room.members).not.toContain(user3WhoFailsToJoin)
     const errorToUser3 = user3WhoFailsToJoin.last50Events.findItemOf(GameError)
-    expect(errorToUser3.code).toBe(1003)
+    expect(errorToUser3.code).toBe(ErrorCode.RoomFull)
     // 5. Users in the room chat, which the outsiders cannot see.
     const message = "hello".repeat(Chat.maxLength)
     hub.handle(user1, new Chat(message))
