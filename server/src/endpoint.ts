@@ -5,6 +5,7 @@ import Hub from "@/hub"
 import User from "@/user"
 import { constructors } from "@shared/action"
 import { Event } from "@shared/event"
+import { Payload } from "@shared/interfaces"
 
 export default class WebSocketEndpoint {
     readonly wsServer: WebSocketServer
@@ -23,7 +24,7 @@ export default class WebSocketEndpoint {
         this.wsServer.on("connection", (ws) => {
             const user = new User("user" + this.userIdCounter++)
             user.setDefaultListener((event: Event) => {
-                const data = {
+                const data: Payload = {
                     type: event.constructor.name,
                     args: instanceToPlain(event)
                 }
@@ -33,7 +34,7 @@ export default class WebSocketEndpoint {
             })
             this.hub.addUser(user)
             ws.onmessage = (message) => {
-                const { type, args } = JSON.parse(message.data.toString()) as { type: string, args: any }
+                const { type, args } = JSON.parse(message.data.toString()) as Payload
                 const constructor = constructors[type]
                 if (!constructor) {
                     console.error(message)

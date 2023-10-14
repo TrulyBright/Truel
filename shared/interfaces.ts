@@ -1,8 +1,10 @@
-/**
- * This file contains the properties of User and Room that are common to both server and client.
- */
 import { Drift } from "./enums"
 import { Event, EventConstructor } from "./event"
+
+export interface Payload {
+    type: string
+    args: any
+}
 
 /**
  * Properties of User that are common to both server and client.

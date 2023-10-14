@@ -1,6 +1,6 @@
 import { Action } from "@shared/action";
 import { constructors } from "@shared/event";
-import { EventListening } from "@shared/interfaces";
+import { EventListening, Payload } from "@shared/interfaces";
 import { instanceToPlain, plainToInstance } from "class-transformer";
 
 export default class Client extends EventListening {
@@ -26,7 +26,7 @@ export default class Client extends EventListening {
     connect() {
         this.ws = new WebSocket(this.URI)
         this.ws.onmessage = (e) => {
-            const { type, args } = JSON.parse(e.data) as { type: string, args: any }
+            const { type, args } = JSON.parse(e.data) as Payload
             const constructor = constructors[type]
             const event = plainToInstance(constructor, args)
             console.log(type, args)
@@ -48,7 +48,7 @@ export default class Client extends EventListening {
     }
 
     perform<A extends Action>(action: A) {
-        const data = {
+        const data: Payload = {
             type: action.constructor.name,
             args: instanceToPlain(action)
         }
