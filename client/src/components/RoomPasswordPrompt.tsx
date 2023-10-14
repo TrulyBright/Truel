@@ -6,9 +6,6 @@ import { JoinRoom } from "@shared/action"
 import { GameError, YouAreInRoom } from "@shared/event"
 import { ErrorCode } from "@shared/enums"
 
-/**
- * This does not close on password submit. You have to close it manually.
- */
 const RoomPasswordPrompt = (props: {room: Room, promptOpen: boolean, setPromptOpen: React.Dispatch<React.SetStateAction<boolean>>}) => {
     const [password, setPassword] = useState<string | null>(null)
     const [passwordWrong, setPasswordWrong] = useState(false)
@@ -27,7 +24,7 @@ const RoomPasswordPrompt = (props: {room: Room, promptOpen: boolean, setPromptOp
         <Dialog open={props.promptOpen} onClose={close}>
             <DialogTitle>Room Entry</DialogTitle>
             <DialogContent>
-                <DialogContentText>You must enter the password to join a private room.</DialogContentText>
+                <DialogContentText>This room has a password.</DialogContentText>
                 <TextField
                     required
                     autoFocus
