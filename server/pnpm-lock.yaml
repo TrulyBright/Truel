@@ -8,6 +8,9 @@ dependencies:
   '@types/jest':
     specifier: ^29.5.5
     version: 29.5.5
+  '@types/ws':
+    specifier: ^8.5.7
+    version: 8.5.7
   class-transformer:
     specifier: ^0.5.1
     version: 0.5.1
@@ -942,6 +945,12 @@ packages:
 
   /@types/stack-utils@2.0.1:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
+    dev: false
+
+  /@types/ws@8.5.7:
+    resolution: {integrity: sha512-6UrLjiDUvn40CMrAubXuIVtj2PEfKDffJS7ychvnPU44j+KVeXmdHHTgqcM/dxLUTHxlXHiFM8Skmb8ozGdTnQ==}
+    dependencies:
+      '@types/node': 20.8.5
     dev: false
 
   /@types/yargs-parser@21.0.1:
