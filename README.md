@@ -18,23 +18,6 @@
     }
 }
 ```
-Below is the code that performs action:
-```typescript
-import { Action } from "@shared/action"
-import { instanceToPlain } from "class-transformer"
-class Client {
-    perform<A extends Action>(action: A) {
-        const data = {
-            type: action.constructor.name,
-            args: instanceToPlain(action)
-        }
-        const raw = JSON.stringify(data)
-        this.ws!.send(raw)
-    }
-}
-```
-where `this.ws` is a `WebSocket` instance provided by the browser.
-
 Once the JSON arrives, the server parses it and finds the constructor for that `Action`. In this case, it's `JoinRoom.constructor`. With the constructor function found, the server makes an `Action` object with the arguments given in the `"args"` field in the JSON above, just like the following:
 ```typescript
 import { plainToClass } from "class-transformer"
