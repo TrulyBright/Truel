@@ -11,30 +11,49 @@ const Lobby = () => {
     const [rooms, setRooms] = useState<Room[]>([])
     const [users, setUsers] = useState<User[]>([])
     useEffect(() => {
+        let updatedRooms: Room[] = []
+        let updatedUsers: User[] = []
         Client.instance
         .on(RoomCreated, (event) => {
-            setRooms((rooms) => [...rooms, Room.from(event)])
+            updatedRooms = [...updatedRooms, Room.from(event)]
+            setRooms(updatedRooms)
         })
         .on(RoomUpdated, (event) => {
-            setRooms(rooms.map((room) => (room.id === event.id ? Room.from(event) : room)))
+            updatedRooms = updatedRooms.map((room) => (room.id === event.id ? Room.from(event) : room))
+            setRooms(updatedRooms)
         })
         .on(RoomDeleted, (event) => {
-            setRooms(rooms.filter((room) => room.id !== event.id))
+            updatedRooms = updatedRooms.filter((room) => room.id !== event.id)
+            setRooms(updatedRooms)
         })
         .on(RoomList, (event) => {
-            setRooms(event.rooms.map((room) => Room.from(room)))
+            updatedRooms = event.rooms.map((room) => Room.from(room))
+            setRooms(updatedRooms)
         })
         .on(UserCreated, (event) => {
-            setUsers((users) => [...users, User.from(event)])
+            updatedUsers = [...updatedUsers, User.from(event)]
+            setUsers(updatedUsers)
         })
         .on(UserDeleted, (event) => {
-            setUsers(users.filter((user) => user.name !== event.name))
+            updatedUsers = updatedUsers.filter((user) => user.name !== event.name)
+            setUsers(updatedUsers)
         })
         .on(UserList, (event) => {
-            setUsers(event.users.map((user) => User.from(user)))
+            updatedUsers = event.users.map((user) => User.from(user))
+            setUsers(updatedUsers)
         })
         Client.instance.perform(new GetRooms())
         Client.instance.perform(new GetUsers())
+        return () => {
+            Client.instance
+            .removeListeners(RoomCreated)
+            .removeListeners(RoomUpdated)
+            .removeListeners(RoomDeleted)
+            .removeListeners(RoomList)
+            .removeListeners(UserCreated)
+            .removeListeners(UserDeleted)
+            .removeListeners(UserList)
+        }
     }, [])
     return (
         <Box sx={{
