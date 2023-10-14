@@ -24,10 +24,10 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
     ) {
         super()
         this
-        .on(Shoot, (actor, action) => this.onShoot(actor, action))
-        .on(DrawCard, (actor, action) => this.onDrawCard(actor, action))
-        .on(PlayCard, (actor, action) => this.onPlayCard(actor, action))
-        .on(ChangeDrift, (actor, action) => this.onChangeDrift(actor, action))
+        .on(Shoot, this.onShoot.bind(this))
+        .on(DrawCard, this.onDrawCard.bind(this))
+        .on(PlayCard, this.onPlayCard.bind(this))
+        .on(ChangeDrift, this.onChangeDrift.bind(this))
     }
 
     get survivors() { return this.players.filter(p => p.alive) }

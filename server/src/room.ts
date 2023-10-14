@@ -19,8 +19,8 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
     ) {
         super()
         this
-        .on(Chat, (actor, action) => this.onChat(actor, action))
-        .on(StartGame, (actor, action) => this.onStartGame(actor, action))
+        .on(Chat, this.onChat.bind(this))
+        .on(StartGame, this.onStartGame.bind(this))
         const inGameActions: ActionConstructor<InGameAction>[] = [Shoot, DrawCard, PlayCard, ChangeDrift]
         inGameActions.forEach(action => this.on(action, (user, action) => {
             // If user.player is not null, it is guaranteed that the user is playing the game of *this* room.
