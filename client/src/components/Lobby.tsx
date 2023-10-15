@@ -8,39 +8,40 @@ import Room from "@/client/room"
 import User from "@/client/user"
 
 const Lobby = () => {
-    const [rooms, setRooms] = useState<Room[]>([])
-    const [users, setUsers] = useState<User[]>([])
+    const [rooms, _setRooms] = useState<Room[]>([])
+    const [users, _setUsers] = useState<User[]>([])
     useEffect(() => {
         let updatedRooms: Room[] = []
         let updatedUsers: User[] = []
+        const setRooms = (rooms: Room[]) => {
+            updatedRooms = rooms
+            _setRooms(rooms)
+        }
+        const setUsers = (users: User[]) => {
+            updatedUsers = users
+            _setUsers(users)
+        }
         Client.instance
         .on(RoomCreated, (event) => {
-            updatedRooms = [...updatedRooms, Room.from(event)]
-            setRooms(updatedRooms)
+            setRooms([...updatedRooms, Room.from(event)])
         })
         .on(RoomUpdated, (event) => {
-            updatedRooms = updatedRooms.map((room) => (room.id === event.id ? Room.from(event) : room))
-            setRooms(updatedRooms)
+            setRooms(updatedRooms.map((room) => (room.id === event.id ? Room.from(event) : room)))
         })
         .on(RoomDeleted, (event) => {
-            updatedRooms = updatedRooms.filter((room) => room.id !== event.id)
-            setRooms(updatedRooms)
+            setRooms(updatedRooms.filter((room) => room.id !== event.id))
         })
         .on(RoomList, (event) => {
-            updatedRooms = event.rooms.map((room) => Room.from(room))
-            setRooms(updatedRooms)
+            setRooms(event.rooms.map((room) => Room.from(room)))
         })
         .on(UserCreated, (event) => {
-            updatedUsers = [...updatedUsers, User.from(event)]
-            setUsers(updatedUsers)
+            setUsers([...updatedUsers, User.from(event)])
         })
         .on(UserDeleted, (event) => {
-            updatedUsers = updatedUsers.filter((user) => user.name !== event.name)
-            setUsers(updatedUsers)
+            setUsers(updatedUsers.filter((user) => user.name !== event.name))
         })
         .on(UserList, (event) => {
-            updatedUsers = event.users.map((user) => User.from(user))
-            setUsers(updatedUsers)
+            setUsers(event.users.map((user) => User.from(user)))
         })
         Client.instance.perform(new GetRooms())
         Client.instance.perform(new GetUsers())
