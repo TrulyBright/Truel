@@ -66,7 +66,7 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
      * Block for 10 seconds or until the player performs either `Shoot` or `DrawCard`, whichever is earlier.
      */
     private async playTurn() {
-        this.broadcast(new NowTurnOf(this.currentPlayer!.name))
+        this.broadcast(new NowTurnOf(this.currentPlayer!))
         await new Promise<void>(resolve => {
             const timeout = setTimeout(() => {
                 this.onShoot(this.currentPlayer!, Shoot.from(this.randomSurvivor))
@@ -104,14 +104,14 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
     }
 
     private actuallyShoot(shooting: Player, target: Player) {
-        this.broadcast(PlayerShot.from(shooting, target))
+        this.broadcast(new PlayerShot(shooting, target))
         if (shooting.probability > Math.random()) {
             if (target.buff[Card.BulletProof]) {
                 target.buff[Card.BulletProof] = false
-                this.broadcast(BulletProofBroken.from(target))
+                this.broadcast(new BulletProofBroken(target))
             } else {
                 target.alive = false
-                this.broadcast(PlayerDead.from(target))
+                this.broadcast(new PlayerDead(target))
                 target.recv(new YouDied())
             }
         }
@@ -122,7 +122,7 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
         const card = pool[Math.floor(Math.random() * pool.length)]
         drawing.card = card
         drawing.recv(new NewCard(card))
-        this.broadcast(PlayerDrewCard.from(drawing))
+        this.broadcast(new PlayerDrewCard(drawing))
     }
 
     private onPlayCard(playing: Player, action: PlayCard) {
@@ -140,7 +140,7 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
             case Card.Run:
                 throw new Error("Not implemented")
         }
-        this.broadcast(CardPlayed.from(playing, playing.card!))
+        this.broadcast(new CardPlayed(playing, playing.card!))
         playing.card = null
     }
 

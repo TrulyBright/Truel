@@ -48,12 +48,12 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
 
     addMember(user: User) {
         this.members.push(user)
-        this.broadcast(new UserJoinedRoom(user.name))
+        this.broadcast(new UserJoinedRoom(user))
     }
 
     removeMember(user: User) {
         this.members = this.members.filter(u => u !== user)
-        this.broadcast(new UserLeftRoom(user.name))
+        this.broadcast(new UserLeftRoom(user))
         if (user === this.host && this.members.length > 0) {
             this.setHost(this.members[0])
         }
@@ -61,11 +61,11 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
 
     private setHost(user: User) {
         this.host = user
-        this.broadcast(new NewHost(user.name))
+        this.broadcast(new NewHost(user))
     }
 
     private onChat(user: User, action: Chat) {
-        this.broadcast(new UserChat(user.name, action.message))
+        this.broadcast(new UserChat(user, action.message))
     }
 
     private onStartGame(user: User, action: StartGame) {

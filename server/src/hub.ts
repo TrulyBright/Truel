@@ -42,7 +42,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
     addUser(user: User) {
         console.log(`${user.name} joined`)
         this.users.push(user)
-        this.broadcast(new UserCreated(user.name))
+        this.broadcast(new UserCreated(user))
     }
 
     removeUser(user: User) {
@@ -51,14 +51,14 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
             this.handle(user, new LeaveRoom())
         }
         this.users = this.users.filter(u => u !== user)
-        this.broadcast(new UserDeleted(user.name))
+        this.broadcast(new UserDeleted(user))
     }
 
     private onCreateRoom(user: User, action: CreateRoom) {
         if (user.room) {this.handle(user, new LeaveRoom())}
         const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password, user)
         this.rooms.set(room.id, room)
-        this.broadcast(RoomCreated.from(room))
+        this.broadcast(new RoomCreated(room))
         this.handle(user, new JoinRoom(room.id, room.password))
     }
 
@@ -70,7 +70,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         if (room.password !== action.password) throw ErrorCode.WrongPassword
         room.addMember(user)
         user.joinRoom(room)
-        this.broadcast(RoomUpdated.from(room))
+        this.broadcast(new RoomUpdated(room))
     }
 
     private onLeaveRoom(user: User, action: LeaveRoom) {
@@ -80,21 +80,21 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         if (left.empty) {
             this.deleteRoom(left)
         } else {
-            this.broadcast(RoomUpdated.from(left))
+            this.broadcast(new RoomUpdated(left))
         }
     }
 
     private onGetRooms(user: User, action: GetRooms) {
-        user.recv(RoomList.from(Array.from(this.rooms.values())))
+        user.recv(new RoomList(Array.from(this.rooms.values())))
     }
 
     private onGetUsers(user: User, action: GetUsers) {
-        user.recv(UserList.from(this.users))
+        user.recv(new UserList(this.users))
     }
 
     private deleteRoom(room: Room) {
         this.rooms.delete(room.id)
-        this.broadcast(RoomDeleted.from(room))
+        this.broadcast(new RoomDeleted(room))
     }
 
     addDummyUsers(count: number) {
