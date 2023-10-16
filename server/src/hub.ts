@@ -27,9 +27,11 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         try {
             super.handle(user, action)
         } catch (e) {
-            if (e instanceof Number) {
+            if (typeof e === "number") {
                 user.recv(new GameError(e as ErrorCode))
-            } else throw e
+            } else {
+                console.error(e)
+            }
         }
     }
 
