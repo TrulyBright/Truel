@@ -27,11 +27,9 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         try {
             super.handle(user, action)
         } catch (e) {
-            if (e instanceof Error) {
-                user.recv(new GameError(ErrorCode[e.message as keyof typeof ErrorCode]))
-            } else {
-                throw e
-            }
+            if (e instanceof Number) {
+                user.recv(new GameError(e as ErrorCode))
+            } else throw e
         }
     }
 
@@ -63,11 +61,11 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
     }
 
     private onJoinRoom(user: User, action: JoinRoom) {
-        if (user.room) throw new Error(ErrorCode[ErrorCode.AlreadyInRoom])
+        if (user.room) throw ErrorCode.AlreadyInRoom
         const room = this.rooms.get(action.roomId)
-        if (!room) throw new Error(ErrorCode[ErrorCode.NoSuchRoom])
-        if (room.full) throw new Error(ErrorCode[ErrorCode.RoomFull])
-        if (room.password !== action.password) throw new Error(ErrorCode[ErrorCode.WrongPassword])
+        if (!room) throw ErrorCode.NoSuchRoom
+        if (room.full) throw ErrorCode.RoomFull
+        if (room.password !== action.password) throw ErrorCode.WrongPassword
         room.addMember(user)
         user.joinRoom(room)
         this.broadcast(RoomUpdated.from(room))

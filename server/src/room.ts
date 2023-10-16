@@ -69,7 +69,7 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
     }
 
     private onStartGame(user: User, action: StartGame) {
-        if (user !== this.host) throw new Error(ErrorCode[ErrorCode.YouAreNotHost])
+        if (user !== this.host) throw ErrorCode.YouAreNotHost
         this.game = new Game(this.members.map(m => new Player(m)), this)
         this.game.start()
         this.game.task!.then(() => {
