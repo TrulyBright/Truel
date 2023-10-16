@@ -26,7 +26,7 @@ export default class WebSocketEndpoint {
             user.setDefaultListener((event: Event) => {
                 const data: Payload = {
                     type: event.constructor.name,
-                    args: instanceToPlain(event)
+                    args: instanceToPlain(event, { enableCircularCheck: true })
                 }
                 const raw = JSON.stringify(data)
                 if (process.env.DEBUG) console.log(`${user.name} <- ${data.type}`)
