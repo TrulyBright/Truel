@@ -9,7 +9,6 @@ type ActionHandler<Actor, A extends Action> = (actor: Actor, action: A) => void
 
 export class ActionHandling<Actor, A extends Action> {
     private readonly handlers = new Map<ActionConstructor<A>, Set<ActionHandler<Actor, A>>>()
-    private readonly defaultHandlers = new Set<ActionHandler<Actor, A>>()
 
     on<T extends A>(actionType: ActionConstructor<T>, handler: ActionHandler<Actor, T>) {
         if (!this.handlers.has(actionType)) {
@@ -35,27 +34,10 @@ export class ActionHandling<Actor, A extends Action> {
 
     handle(actor: Actor, action: A) {
         this.handlers.get(action.constructor as ActionConstructor<A>)?.forEach(handler => handler(actor, action))
-        this.defaultHandlers.forEach(handler => handler(actor, action))
-    }
-
-    setDefaultHandler(handler: ActionHandler<Actor, A>) {
-        this.defaultHandlers.add(handler)
-        return this
-    }
-
-    removeDefaultHandler(handler: ActionHandler<Actor, A>) {
-        this.defaultHandlers.delete(handler)
-        return this
-    }
-
-    removeAllDefaultHandlers() {
-        this.defaultHandlers.clear()
-        return this
     }
 
     removeAllHandlers() {
         this.handlers.clear()
-        this.defaultHandlers.clear()
         return this
     }
 
