@@ -2,9 +2,13 @@
 *Truel* is an online multiplayer game where players bet and shoot at each other with varying probability of kill. The last man standing wins all the stakes.
 ## How to run
 ### Running the client SPA
-`cd client && pnpm install && pnpm run watch`
+```bash
+cd client && pnpm install && pnpm run watch
+```
 ### Running the server
-`cd server && pnpm install && pnpm run watch`
+```bash
+cd server && pnpm install && pnpm run watch
+```
 ## Structure of the code
 *Truel* has two key concepts: `Action` and `Event`. `Action` is what `User` sends to the server and `Event` is what is sent to `User`. Both `/client` and `/server` share the same code implementing `Action` and `Event` in `/shared`, in order for that code to work as an interface.
 ### `Action`
