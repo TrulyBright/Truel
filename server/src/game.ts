@@ -69,7 +69,7 @@ export default class Game extends ActionHandling<Player, InGameAction> implement
         this.broadcast(new NowTurnOf(this.currentPlayer!))
         await new Promise<void>(resolve => {
             const timeout = setTimeout(() => {
-                this.onShoot(this.currentPlayer!, Shoot.from(this.randomSurvivor))
+                this.onShoot(this.currentPlayer!, new Shoot(this.randomSurvivor))
                 resolve()
             }, Game.turnTimeLimit)
             const finish = () => {

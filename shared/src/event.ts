@@ -144,9 +144,7 @@ export class CardPlayed implements Event {
     ) { }
 }
 
-export type EventConstructor<T extends Event> = ClassConstructor<T>
-
-export const constructors: Record<string, EventConstructor<Event>> = {
+export const constructors: Record<string, ClassConstructor<Event>> = {
     UserCreated,
     UserDeleted,
     UserJoinedRoom,

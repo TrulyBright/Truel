@@ -93,9 +93,7 @@ export class ChangeDrift implements InGameAction {
     }
 }
 
-export type ActionConstructor<T extends Action> = ClassConstructor<T>
-
-export const constructors: Record<string, ActionConstructor<Action>> = {
+export const constructors: Record<string, ClassConstructor<Action>> = {
     CreateRoom,
     JoinRoom,
     LeaveRoom,

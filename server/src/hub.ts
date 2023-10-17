@@ -1,4 +1,5 @@
-import { Action, ActionConstructor, ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InRoomAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
+import { ClassConstructor } from "class-transformer";
+import { Action, ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InRoomAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
 import { GameError, Event, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import Room from "@/room";
@@ -19,7 +20,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         .on(LeaveRoom, this.onLeaveRoom.bind(this))
         .on(GetRooms, this.onGetRooms.bind(this))
         .on(GetUsers, this.onGetUsers.bind(this))
-        const inRoomActions: ActionConstructor<InRoomAction>[] = [Chat, StartGame, Shoot, DrawCard, PlayCard, ChangeDrift]
+        const inRoomActions: ClassConstructor<InRoomAction>[] = [Chat, StartGame, Shoot, DrawCard, PlayCard, ChangeDrift]
         inRoomActions.forEach(action => this.on(action, (user, action) => {user.room?.handle(user, action)}))
     }
 
