@@ -23,7 +23,7 @@ export default class WebSocketEndpoint {
     start() {
         this.wsServer.on("connection", (ws) => {
             const user = new User("user" + this.userIdCounter++)
-            user.setDefaultListener((event: Event) => {
+            user.setDefaultListener(<T extends Event>(event: T) => {
                 const data: Payload = {
                     type: event.constructor.name,
                     args: instanceToPlain(event, { enableCircularCheck: true })
@@ -40,7 +40,7 @@ export default class WebSocketEndpoint {
                     console.error(message)
                     return
                 }
-                const action = plainToInstance(constructor, args)
+                const action = plainToInstance(constructor, args, { excludeExtraneousValues: true })
                 if (process.env.DEBUG) console.log(`${user.name} -> ${type}`)
                 this.hub.handle(user, action)
             }

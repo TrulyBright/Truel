@@ -3,7 +3,9 @@ import { EventListening, UserCommonInterface } from "@shared/interfaces"
 import { Queue } from "@shared/utils"
 import Room from "@/room"
 import Player from "@/player"
+import { Exclude, Expose } from "class-transformer"
 
+@Exclude()
 export default class User extends EventListening implements UserCommonInterface {
     room: Room | null = null
     readonly last50Events = new Queue()
@@ -13,8 +15,11 @@ export default class User extends EventListening implements UserCommonInterface 
     }
     player: Player | null = null
 
-    constructor(public readonly name: string) {
+    @Expose()
+    readonly name: string
+    constructor(name: string) {
         super()
+        this.name = name
         this.setDefaultListener(this.eventRecorder)
     }
 

@@ -7,14 +7,14 @@ export interface Payload {
 }
 
 /**
- * Properties of User that are common to both server and client.
+ * Mark `@Expose()` on properties that need to be serialized.
  */
 export interface UserCommonInterface {
     name: string
 }
 
 /**
- * Properties of Room that are common to both server and client.
+ * Mark `@Expose()` on properties that need to be serialized.
  */
 export interface RoomCommonInterface {
     readonly id: number
@@ -26,6 +26,9 @@ export interface RoomCommonInterface {
     get private(): boolean
 }
 
+/**
+ * Mark `@Expose()` on properties that need to be serialized.
+ */
 export interface PlayerCommonInterface {
     user: UserCommonInterface
     alive: boolean

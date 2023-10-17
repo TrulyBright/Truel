@@ -1,23 +1,39 @@
 import { Chat, StartGame, Shoot, PlayCard, DrawCard, ChangeDrift, ActionConstructor, InGameAction, InRoomAction } from "@shared/action"
-import { Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom } from "@shared/event"
+import { Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom, constructors } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
 import { ActionHandling, Broadcasting } from "@/interfaces"
 import User from "@/user"
 import Game from "@/game"
 import Player from "@/player"
 import { ErrorCode } from "@shared/enums"
+import { Exclude, Expose } from "class-transformer"
 
+@Exclude()
 export default class Room extends ActionHandling<User, InRoomAction> implements Broadcasting, RoomCommonInterface {
     members: User[] = []
     game: Game | null = null
+    @Expose()
+    readonly id: number
+    @Expose()
+    name: string
+    @Expose()
+    maxMembers: number
+    @Expose()
+    host: User
+    password: string | null
     constructor(
-        public readonly id: number,
-        public name: string,
-        public maxMembers: number,
-        public password: string | null,
-        public host: User
+        id: number,
+        name: string,
+        maxMembers: number,
+        host: User,
+        password: string | null = null,
     ) {
         super()
+        this.id = id
+        this.name = name
+        this.maxMembers = maxMembers
+        this.host = host
+        this.password = password
         this
         .on(Chat, this.onChat.bind(this))
         .on(StartGame, this.onStartGame.bind(this))
