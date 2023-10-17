@@ -1,8 +1,6 @@
-/**
- * This file contains all the events that can be sent to the client.
- */
-import { Card, Drift, ErrorCode } from "./enums"
-import { PlayerCommonInterface, RoomCommonInterface, UserCommonInterface } from "./interfaces"
+import { ClassConstructor } from "class-transformer"
+import { Card, Drift, ErrorCode } from "@/enums"
+import { PlayerCommonInterface, RoomCommonInterface, UserCommonInterface } from "@/interfaces"
 
 export interface Event { }
 
@@ -146,7 +144,7 @@ export class CardPlayed implements Event {
     ) { }
 }
 
-export type EventConstructor<T extends Event> = new (...args: any[]) => T
+export type EventConstructor<T extends Event> = ClassConstructor<T>
 
 export const constructors: Record<string, EventConstructor<Event>> = {
     UserCreated,

@@ -50,7 +50,7 @@ export default class Client extends EventListening {
     perform<A extends Action>(action: A) {
         const data: Payload = {
             type: action.constructor.name,
-            args: instanceToPlain(action)
+            args: instanceToPlain(action, { enableCircularCheck: true })
         }
         const raw = JSON.stringify(data)
         console.log(data.type, data.args)

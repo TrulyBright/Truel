@@ -41,7 +41,10 @@ export default class WebSocketEndpoint {
                     return
                 }
                 const action = plainToInstance(constructor, args, { excludeExtraneousValues: true })
-                if (process.env.DEBUG) console.log(`${user.name} -> ${type}`)
+                if (process.env.DEBUG) {
+                    console.log(`${user.name} -> ${type}`)
+                    console.log(action)
+                }
                 this.hub.handle(user, action)
             }
             ws.onclose = () => {

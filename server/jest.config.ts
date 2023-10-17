@@ -12,7 +12,7 @@ const config: Config = {
     ],
     moduleNameMapper: {
         "@/(.*)": "<rootDir>/src/$1",
-        "@shared/(.*)": "<rootDir>/../shared/$1"
+        "@shared/(.*)": "<rootDir>/../shared/src/$1"
     }
 }
 

@@ -1,4 +1,4 @@
-import { Event, EventConstructor } from "./event"
+import { Event, EventConstructor } from "@/event"
 
 export class Queue {
     private elements: Record<number, Event> = {}

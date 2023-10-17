@@ -1,6 +1,14 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "strict": true
+        "strict": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "Bundler",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
     },
 }

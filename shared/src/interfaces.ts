@@ -1,5 +1,5 @@
-import { Drift } from "./enums"
-import { Event, EventConstructor } from "./event"
+import { Drift } from "@/enums"
+import { Event, EventConstructor } from "@/event"
 
 export interface Payload {
     type: string
