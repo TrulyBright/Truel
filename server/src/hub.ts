@@ -56,7 +56,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
 
     private onCreateRoom(user: User, action: CreateRoom) {
         if (user.room) {this.handle(user, new LeaveRoom())}
-        const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, action.password, user)
+        const room = new Room(this.roomIdCounter++, action.name, action.maxMembers, user, action.password)
         this.rooms.set(room.id, room)
         this.broadcast(new RoomCreated(room))
         this.handle(user, new JoinRoom(room.id, room.password))
