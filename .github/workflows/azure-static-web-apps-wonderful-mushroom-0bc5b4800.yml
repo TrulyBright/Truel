@@ -34,7 +34,7 @@ jobs:
           version: "8.9.0"
           run_install: true
       - name: Build
-        run: pnpm build
+        run: pnpm build --prefix client
       - name: Deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
