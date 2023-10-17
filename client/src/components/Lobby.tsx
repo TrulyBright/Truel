@@ -23,25 +23,25 @@ const Lobby = () => {
         }
         Client.instance
         .on(RoomCreated, (event) => {
-            setRooms([...updatedRooms, Room.from(event)])
+            setRooms([...updatedRooms, event.room as Room])
         })
         .on(RoomUpdated, (event) => {
-            setRooms(updatedRooms.map((room) => (room.id === event.id ? Room.from(event) : room)))
+            setRooms(updatedRooms.map(room => room.id === event.room.id ? event.room as Room : room))
         })
         .on(RoomDeleted, (event) => {
-            setRooms(updatedRooms.filter((room) => room.id !== event.id))
+            setRooms(updatedRooms.filter(room => room.id !== event.room.id))
         })
         .on(RoomList, (event) => {
-            setRooms(event.rooms.map((room) => Room.from(room)))
+            setRooms(event.rooms.map(room => room as Room))
         })
         .on(UserCreated, (event) => {
-            setUsers([...updatedUsers, User.from(event)])
+            setUsers([...updatedUsers, event.user as User])
         })
         .on(UserDeleted, (event) => {
-            setUsers(updatedUsers.filter((user) => user.name !== event.name))
+            setUsers(updatedUsers.filter(user => user.name !== event.user.name))
         })
         .on(UserList, (event) => {
-            setUsers(event.users.map((user) => User.from(user)))
+            setUsers(event.users.map(user => user as User))
         })
         Client.instance.perform(new GetRooms())
         Client.instance.perform(new GetUsers())

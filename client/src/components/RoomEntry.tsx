@@ -23,14 +23,14 @@ const RoomEntry = (props: {room: Room}) => {
                     cursor: "pointer"
                 }
             }} onClick={() => {
-                if (props.room.private) setPasswordPromptOpen(true)
+                if (props.room.isPrivate) setPasswordPromptOpen(true)
                 else Client.instance.perform(new JoinRoom(props.room.id, null))
             }}>
                 <Typography variant="body2">
                     {props.room.name}
                 </Typography>
                 <Typography variant="caption">{props.room.members.length} / {props.room.maxMembers}</Typography>
-                <Lock sx={{visibility: props.room.private ? "visible":"hidden"}} />
+                <Lock sx={{visibility: props.room.isPrivate ? "visible":"hidden"}} />
             </Paper>
             {passwordPromptOpen ? <RoomPasswordPrompt room={props.room} promptOpen={passwordPromptOpen} setPromptOpen={setPasswordPromptOpen}/> : null}
         </>
