@@ -10,7 +10,6 @@ import { Exclude, Expose } from "class-transformer"
 
 @Exclude()
 export default class Room extends ActionHandling<User, InRoomAction> implements Broadcasting, RoomCommonInterface {
-    members: User[] = []
     game: Game | null = null
     @Expose()
     readonly id: number
@@ -18,6 +17,8 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
     name: string
     @Expose()
     maxMembers: number
+    @Expose()
+    members: User[] = []
     @Expose()
     host: User
     password: string | null
@@ -46,7 +47,8 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
         }))
     }
 
-    get private() {
+    @Expose()
+    get isPrivate() {
         return this.password !== null;
     }
 

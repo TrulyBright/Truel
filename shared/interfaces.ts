@@ -23,7 +23,7 @@ export interface RoomCommonInterface {
     members: UserCommonInterface[]
     maxMembers: number
 
-    get private(): boolean
+    get isPrivate(): boolean
 }
 
 /**
