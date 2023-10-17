@@ -1,6 +1,6 @@
 import { ClassConstructor } from "class-transformer";
 import { Action, ChangeDrift, Chat, CreateRoom, DrawCard, GetRooms, GetUsers, InRoomAction, JoinRoom, LeaveRoom, PlayCard, Shoot, StartGame } from "@shared/action";
-import { GameError, Event, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList } from "@shared/event";
+import { GameError, Event, RoomCreated, RoomDeleted, RoomList, RoomUpdated, UserCreated, UserDeleted, UserList, YouAreInLobby } from "@shared/event";
 import { Broadcasting } from "@/interfaces";
 import Room from "@/room";
 import User from "@/user";
@@ -83,6 +83,7 @@ export default class Hub extends ActionHandling<User, Action> implements Broadca
         } else {
             this.broadcast(new RoomUpdated(left))
         }
+        user.recv(new YouAreInLobby())
     }
 
     private onGetRooms(user: User, action: GetRooms) {

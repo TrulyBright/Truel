@@ -83,4 +83,10 @@ export class EventListening {
         this.listeners.delete(event)
         return this
     }
+
+    removeAllListeners() {
+        this.listeners.clear()
+        this.defaultListeners.clear()
+        return this
+    }
 }

@@ -1,12 +1,12 @@
-import { Chat, StartGame, Shoot, PlayCard, DrawCard, ChangeDrift, ActionConstructor, InGameAction, InRoomAction } from "@shared/action"
-import { Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom, constructors } from "@shared/event"
+import { Chat, StartGame, Shoot, PlayCard, DrawCard, ChangeDrift, InGameAction, InRoomAction } from "@shared/action"
+import { Event, NewHost, UserChat, UserJoinedRoom, UserLeftRoom, YouAreInRoom } from "@shared/event"
 import { RoomCommonInterface } from "@shared/interfaces"
 import { ActionHandling, Broadcasting } from "@/interfaces"
 import User from "@/user"
 import Game from "@/game"
 import Player from "@/player"
 import { ErrorCode } from "@shared/enums"
-import { Exclude, Expose } from "class-transformer"
+import { Exclude, Expose, ClassConstructor } from "class-transformer"
 
 @Exclude()
 export default class Room extends ActionHandling<User, InRoomAction> implements Broadcasting, RoomCommonInterface {
@@ -38,7 +38,7 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
         this
         .on(Chat, this.onChat.bind(this))
         .on(StartGame, this.onStartGame.bind(this))
-        const inGameActions: ActionConstructor<InGameAction>[] = [Shoot, DrawCard, PlayCard, ChangeDrift]
+        const inGameActions: ClassConstructor<InGameAction>[] = [Shoot, DrawCard, PlayCard, ChangeDrift]
         inGameActions.forEach(action => this.on(action, (user, action) => {
             // If user.player is not null, it is guaranteed that the user is playing the game of *this* room.
             // It is because if the user is playing the game of another room, the user is not in this room,
@@ -65,6 +65,7 @@ export default class Room extends ActionHandling<User, InRoomAction> implements 
     }
 
     addMember(user: User) {
+        user.recv(new YouAreInRoom())
         this.members.push(user)
         this.broadcast(new UserJoinedRoom(user))
     }

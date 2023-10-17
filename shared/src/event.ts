@@ -67,8 +67,7 @@ export class UserList implements Event {
 
 export class YouAreInRoom implements Event { }
 
-export class YouAreOutOfRoom implements Event { }
-
+export class YouAreInLobby implements Event { }
 
 export class GameError implements Event {
     constructor(
@@ -170,5 +169,5 @@ export const constructors: Record<string, ClassConstructor<Event>> = {
     PlayerDrewCard,
     CardPlayed,
     YouAreInRoom,
-    YouAreOutOfRoom
+    YouAreInLobby
 }
