@@ -142,7 +142,7 @@ export class CardPlayed implements Event {
     ) { }
 }
 
-export const constructors = [
+export const EVENT_CONSTRUCTORS = [
     UserCreated,
     UserDeleted,
     UserJoinedRoom,

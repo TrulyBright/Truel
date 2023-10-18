@@ -93,7 +93,7 @@ export class ChangeDrift implements InGameAction {
     }
 }
 
-export const constructors = [
+export const ACTION_CONSTRUCTORS = [
     CreateRoom,
     JoinRoom,
     LeaveRoom,

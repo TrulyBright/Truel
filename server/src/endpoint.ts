@@ -3,9 +3,10 @@ import { instanceToPlain, plainToInstance } from "class-transformer"
 import { WebSocketServer } from "ws"
 import Hub from "@/hub"
 import User from "@/user"
-import { constructors } from "@shared/action"
+import { EVENT_CONSTRUCTORS } from "@shared/event"
 import { Event } from "@shared/event"
 import { Payload } from "@shared/interfaces"
+import { ACTION_CONSTRUCTORS } from "@shared/action"
 
 export default class WebSocketEndpoint {
     readonly wsServer: WebSocketServer
@@ -25,9 +26,10 @@ export default class WebSocketEndpoint {
             const user = new User("user" + this.userIdCounter++)
             user.setDefaultListener(<T extends Event>(event: T) => {
                 const data: Payload = {
-                    type: event.constructor.name,
+                    type: EVENT_CONSTRUCTORS.findIndex(constructor => event instanceof constructor),
                     args: instanceToPlain(event, { enableCircularCheck: true })
                 }
+                if (data.type === -1) throw new Error("Event not found")
                 const raw = JSON.stringify(data)
                 if (process.env.DEBUG) console.log(`${user.name} <- ${data.type}`)
                 ws.send(raw)
@@ -35,7 +37,7 @@ export default class WebSocketEndpoint {
             this.hub.addUser(user)
             ws.onmessage = (message) => {
                 const { type, args } = JSON.parse(message.data.toString()) as Payload
-                const constructor = constructors[type]
+                const constructor = ACTION_CONSTRUCTORS[type]
                 if (!constructor) {
                     console.error(message)
                     return
