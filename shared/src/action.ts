@@ -93,7 +93,7 @@ export class ChangeDrift implements InGameAction {
     }
 }
 
-export const constructors: Record<string, ClassConstructor<Action>> = {
+export const constructors = [
     CreateRoom,
     JoinRoom,
     LeaveRoom,
@@ -105,4 +105,4 @@ export const constructors: Record<string, ClassConstructor<Action>> = {
     DrawCard,
     PlayCard,
     ChangeDrift,
-}
+]

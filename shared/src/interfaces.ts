@@ -3,7 +3,13 @@ import { Event } from "@/event"
 import { ClassConstructor } from "class-transformer"
 
 export interface Payload {
-    type: string
+    /**
+     * index of constructor in `constructors`.
+     */
+    type: number
+    /**
+     * arguments for constructor.
+     */
     args: any
 }
 

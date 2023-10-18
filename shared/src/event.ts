@@ -1,4 +1,3 @@
-import { ClassConstructor } from "class-transformer"
 import { Card, Drift, ErrorCode } from "@/enums"
 import { PlayerCommonInterface, RoomCommonInterface, UserCommonInterface } from "@/interfaces"
 
@@ -143,7 +142,7 @@ export class CardPlayed implements Event {
     ) { }
 }
 
-export const constructors: Record<string, ClassConstructor<Event>> = {
+export const constructors = [
     UserCreated,
     UserDeleted,
     UserJoinedRoom,
@@ -170,4 +169,4 @@ export const constructors: Record<string, ClassConstructor<Event>> = {
     CardPlayed,
     YouAreInRoom,
     YouAreInLobby
-}
+]
