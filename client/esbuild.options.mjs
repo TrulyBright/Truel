@@ -8,7 +8,6 @@ export default {
     outdir: "dist",
     bundle: true,
     minify: true,
-    keepNames: true,
     treeShaking: true,
     metafile: true,
     logLevel: "info",
